@@ -4,18 +4,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
+import base64
 
 # Load Data
 @st.cache_data
 def load_data():
-    combined_data = pd.read_csv("combined_data.csv")  # Replace with your dataset
-    filtered_data = pd.read_csv("filtered_data.csv")  # Replace with your dataset
+    combined_data = pd.read_csv("combined_data.csv")
+    filtered_data = pd.read_csv("filtered_data.csv")
     return combined_data, filtered_data
 
 # Load Model
 @st.cache_data
 def load_model():
     return joblib.load("ensemble_model.pkl")
+
+# Helper Function: Load Base64 Encoded Image
+def get_base64(file_path):
+    with open(file_path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
 # Set Background Image
 def set_background(image_file):
@@ -30,16 +36,6 @@ def set_background(image_file):
         """,
         unsafe_allow_html=True
     )
-
-# Load Image as Base64
-import base64
-
-def get_base64(file_path):
-    with open(file_path, "rb") as f:
-        return base64.b64encode(f.read()).decode()
-
-# Load Background Image
-background_image = get_base64("pl_logo.jpg")
 
 # Interactive Visualizations
 def plot_team_performance(team, data):
@@ -135,53 +131,45 @@ def league_overview(data):
     st.pyplot(plt)
 
 def app():
-    # Set Background
+    # Load Images
+    background_image = get_base64("pl_logo.jpg")
     set_background(background_image)
 
     st.title("AI-Powered Football Match Outcome Predictor")
-    st.header("Interactive Analytics and Visualizations")
 
     # Load data and model
     combined_data, filtered_data = load_data()
     model = load_model()
 
-    # Statistics Panel
-    st.sidebar.header("Statistics Panel")
-    if st.sidebar.checkbox("Show League Overview"):
+    st.sidebar.header("Statistics Panels")
+
+    if st.sidebar.checkbox("League-Wide Overview"):
         league_overview(combined_data)
 
-    # Team Selection
     teams = pd.concat([combined_data['HomeTeam'], combined_data['AwayTeam']]).unique()
-    selected_team = st.selectbox("Select a Team", teams)
 
-    st.subheader("Team Performance Over Time")
-    plot_team_performance(selected_team, combined_data)
+    if st.sidebar.checkbox("Team Performance"):
+        selected_team = st.sidebar.selectbox("Select a Team", teams)
+        plot_team_performance(selected_team, combined_data)
 
-    st.subheader("Goal Distribution")
-    plot_goal_distribution(selected_team, combined_data)
+    if st.sidebar.checkbox("Head-to-Head Comparison"):
+        team1 = st.sidebar.selectbox("Select Team 1", teams)
+        team2 = st.sidebar.selectbox("Select Team 2", [t for t in teams if t != team1])
+        plot_head_to_head(team1, team2, combined_data)
+        compare_teams(team1, team2, combined_data)
 
-    st.subheader("Match Outcomes")
-    plot_match_outcomes(selected_team, combined_data)
+    if st.sidebar.checkbox("Match Prediction"):
+        st.subheader("Predict Outcome")
+        HomeGoalAvg = st.number_input("Avg Goals Home Team (Last 5 Matches):", min_value=0.0, step=0.1)
+        AwayGoalAvg = st.number_input("Avg Goals Away Team (Last 5 Matches):", min_value=0.0, step=0.1)
+        HomeWinRate = st.number_input("Home Win Rate:", min_value=0.0, max_value=1.0, step=0.01)
+        AwayWinRate = st.number_input("Away Win Rate:", min_value=0.0, max_value=1.0, step=0.01)
 
-    st.subheader("Head-to-Head Comparison")
-    team2 = st.selectbox("Select Opponent", [t for t in teams if t != selected_team])
-    plot_head_to_head(selected_team, team2, combined_data)
-
-    st.subheader("Team Comparison")
-    compare_teams(selected_team, team2, combined_data)
-
-    st.subheader("Predict Outcome")
-    HomeGoalAvg = st.number_input("Average Goals by Home Team (Last 5 Matches):", min_value=0.0, step=0.1)
-    AwayGoalAvg = st.number_input("Average Goals by Away Team (Last 5 Matches):", min_value=0.0, step=0.1)
-    HomeWinRate = st.number_input("Home Team Win Rate:", min_value=0.0, max_value=1.0, step=0.01)
-    AwayWinRate = st.number_input("Away Team Win Rate:", min_value=0.0, max_value=1.0, step=0.01)
-
-    if st.button("Predict Outcome"):
-        input_data = np.array([[HomeGoalAvg, AwayGoalAvg, HomeWinRate, AwayWinRate]])
-        prediction = model.predict(input_data)[0]
-        outcome_map = {0: "Home Win", 1: "Draw", 2: "Away Win"}
-        st.write(f"The predicted outcome is: **{outcome_map[prediction]}**")
+        if st.button("Predict Outcome"):
+            input_data = np.array([[HomeGoalAvg, AwayGoalAvg, HomeWinRate, AwayWinRate]])
+            prediction = model.predict(input_data)[0]
+            outcome_map = {0: "Home Win", 1: "Draw", 2: "Away Win"}
+            st.write(f"The predicted outcome is: **{outcome_map[prediction]}**")
 
 if __name__ == "__main__":
     app()
-
