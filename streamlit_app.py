@@ -211,9 +211,10 @@ def league_prediction(data):
         # Dynamic Performance Insights: Total Clean Sheets
 def plot_clean_sheets_chart(data):
     try:
+        # Aggregate clean sheets by team
         clean_sheets = data.groupby("Team")["CleanSheets"].sum().sort_values(ascending=False)
 
-        # Create the plot
+        # Create a bar chart
         plt.figure(figsize=(12, 6))
         clean_sheets.plot(kind="bar", color="skyblue")
         plt.title("Performance Insights: Total Clean Sheets", fontsize=16, color="white")
@@ -225,8 +226,10 @@ def plot_clean_sheets_chart(data):
         st.pyplot(plt)
 
     except Exception as e:
+        # Log and display any errors encountered
         logging.error(f"Error generating clean sheets chart: {e}")
-        st.error(f"Error generating clean sheets chart: {e}")
+        st.error(f"An error occurred while generating the clean sheets chart: {e}")
+
 
 def match_winner_predictor(data):
     try:
