@@ -113,18 +113,27 @@ def league_prediction(data):
     try:
         st.subheader("League Performance Prediction")
 
-        # Load and encode the Mo Salah image
-        salah_image = get_base64("mo_salah.jpg")  # Ensure the correct path to the image
+        # Load and encode the Steve Torres image
+        torres_image = get_base64("steve_torres.jpg")  # Ensure the correct path to the image
 
         # Add a style block for the table with the background
         st.markdown(
             f"""
             <style>
-            .salah-background {{
-                background: url(data:image/png;base64,{salah_image});
+            .torres-background {{
+                background: url(data:image/png;base64,{torres_image});
                 background-size: cover;
                 color: white;
                 font-weight: bold;
+                padding: 10px;
+                border-radius: 10px;
+            }}
+            table {{
+                color: white;
+                background: rgba(0, 0, 0, 0.7);
+            }}
+            th {{
+                color: lightgreen;
             }}
             </style>
             """,
@@ -173,19 +182,46 @@ def league_prediction(data):
         # Convert dictionary to DataFrame
         prediction_df = pd.DataFrame(prediction_results).T
         
-        # Apply custom CSS for the background
+        # Render the table with background styling
         st.markdown(
             f"""
-            <div class="salah-background">
+            <div class="torres-background">
                 {prediction_df.to_html(index=True, escape=False)}
             </div>
             """,
             unsafe_allow_html=True
         )
+
+        # Plotting dynamic graphs for performance insights
+        st.subheader("Performance Insights")
+        team_performance = prediction_df.sort_values(by="Win Rate (%)", ascending=False)
+        plt.figure(figsize=(10, 6))
+        plt.bar(team_performance.index, team_performance["Win Rate (%)"], color="dodgerblue")
+        plt.title("Win Rate by Teams", color="white")
+        plt.xlabel("Teams", color="white")
+        plt.ylabel("Win Rate (%)", color="white")
+        plt.xticks(rotation=45, color="white")
+        plt.yticks(color="white")
+        st.pyplot(plt)
+
+        # Interactive team-specific win probability
+        st.subheader("Team-Specific Win Probability")
+        selected_team = st.selectbox("Select a Team", team_performance.index)
+        team_data = prediction_df.loc[selected_team]
+        fig, ax = plt.subplots(figsize=(6, 6))
+        ax.pie(
+            [team_data["Win Rate (%)"], team_data["Draw Rate (%)"], team_data["Loss Rate (%)"]],
+            labels=["Win", "Draw", "Loss"],
+            autopct="%1.1f%%",
+            startangle=90,
+            colors=["green", "yellow", "red"],
+        )
+        ax.set_title(f"Win Probability for {selected_team}", color="white")
+        st.pyplot(fig)
+
     except Exception as e:
         logging.error(f"Error in league_prediction: {e}")
         st.error(f"Error generating league predictions: {e}")
-
 def match_winner_predictor(data):
     try:
         st.subheader("Match Winner Predictor")
