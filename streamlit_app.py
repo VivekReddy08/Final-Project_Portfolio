@@ -11,79 +11,98 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import joblib
-import os
+import seaborn as sns
+from sklearn.externals import joblib
 
-# Load the trained ensemble model
-model_path = "ensemble_model.pkl"
-if not os.path.exists(model_path):
-    st.error("Model file not found. Please ensure 'ensemble_model.pkl' is available in the repository.")
-    st.stop()
+# Load Data
+@st.cache
+def load_data():
+    combined_data = pd.read_csv("combined_data.csv")  # Replace with your dataset
+    filtered_data = pd.read_csv("filtered_data.csv")  # Replace with your dataset
+    return combined_data, filtered_data
 
-ensemble_model = joblib.load(model_path)
+# Load Model
+@st.cache
+def load_model():
+    return joblib.load("ensemble_model.pkl")
 
-# Load data for statistics (ensure these files are uploaded to your repo)
-combined_data_path = "combined_data.csv"  # Replace with your actual file path
-if not os.path.exists(combined_data_path):
-    st.error("Combined data file not found. Please ensure 'combined_data.csv' is available in the repository.")
-    st.stop()
+# Interactive Visualizations
+def plot_team_performance(team, data):
+    team_data = data[data['Team'] == team]
+    plt.figure(figsize=(10, 5))
+    sns.lineplot(x='MatchDate', y='Points', data=team_data, label='Points')
+    sns.lineplot(x='MatchDate', y='GoalsScored', data=team_data, label='Goals Scored')
+    plt.title(f"Performance Over Time: {team}")
+    plt.xlabel("Date")
+    plt.ylabel("Metrics")
+    plt.legend()
+    st.pyplot(plt)
 
-combined_data = pd.read_csv(combined_data_path)
+def plot_goal_distribution(team, data):
+    team_data = data[data['Team'] == team]
+    plt.figure(figsize=(10, 5))
+    sns.histplot(team_data['GoalsScored'], bins=10, kde=True)
+    plt.title(f"Goal Distribution for {team}")
+    plt.xlabel("Goals")
+    plt.ylabel("Frequency")
+    st.pyplot(plt)
 
-# Streamlit app with enhanced UI
-def main():
-    st.set_page_config(page_title="Football Outcome Predictor", layout="wide")
-    st.title("⚽ AI-Powered Football Match Outcome Predictor")
-    
-    st.sidebar.title("Team and Match Insights")
-    team_selected = st.sidebar.selectbox("Select a Team for Insights", sorted(combined_data['HomeTeam'].unique()))
+def plot_match_outcomes(team, data):
+    team_data = data[data['Team'] == team]
+    outcomes = team_data['MatchOutcome'].value_counts()
+    plt.figure(figsize=(5, 5))
+    outcomes.plot.pie(autopct='%1.1f%%', startangle=90, colors=['#4CAF50', '#FFC107', '#F44336'])
+    plt.title(f"Match Outcomes for {team}")
+    st.pyplot(plt)
 
-    # Display team stats
-    st.sidebar.header(f"{team_selected} - Statistics")
-    team_data = combined_data[(combined_data['HomeTeam'] == team_selected) | (combined_data['AwayTeam'] == team_selected)]
-    goals_scored = team_data[team_data['HomeTeam'] == team_selected]['FTHG'].sum() + team_data[team_data['AwayTeam'] == team_selected]['FTAG'].sum()
-    goals_conceded = team_data[team_data['HomeTeam'] == team_selected]['FTAG'].sum() + team_data[team_data['AwayTeam'] == team_selected]['FTHG'].sum()
-    matches_played = len(team_data)
-    possession_avg = team_data['Possession'].mean() if 'Possession' in team_data.columns else "N/A"
+def plot_head_to_head(team1, team2, data):
+    h2h_data = data[(data['HomeTeam'] == team1) & (data['AwayTeam'] == team2) |
+                    (data['HomeTeam'] == team2) & (data['AwayTeam'] == team1)]
+    outcomes = h2h_data['MatchOutcome'].value_counts()
+    plt.figure(figsize=(5, 5))
+    outcomes.plot.pie(autopct='%1.1f%%', startangle=90, colors=['#4CAF50', '#FFC107', '#F44336'])
+    plt.title(f"Head-to-Head: {team1} vs {team2}")
+    st.pyplot(plt)
 
-    st.sidebar.write(f"Matches Played: {matches_played}")
-    st.sidebar.write(f"Goals Scored: {goals_scored}")
-    st.sidebar.write(f"Goals Conceded: {goals_conceded}")
-    st.sidebar.write(f"Average Possession: {possession_avg}%")
+def app():
+    st.title("AI-Powered Football Match Outcome Predictor")
+    st.header("Interactive Analytics and Visualizations")
 
-    # Add interactive chart
-    st.sidebar.header("Goals Over Time")
-    team_data['MatchDate'] = pd.to_datetime(team_data['Date'])
-    goals_over_time = team_data.groupby('MatchDate')[['FTHG', 'FTAG']].sum()
-    st.sidebar.line_chart(goals_over_time)
+    # Load data and model
+    combined_data, filtered_data = load_data()
+    model = load_model()
 
-    # Input features for prediction
-    st.header("Input Match Details")
-    col1, col2 = st.columns(2)
+    # Team Selection
+    teams = combined_data['Team'].unique()
+    selected_team = st.selectbox("Select a Team", teams)
 
-    with col1:
-        HomeGoalAvg = st.number_input("🏠 Average Goals by Home Team (Last 5 Matches):", min_value=0.0, step=0.1)
-        HomeWinRate = st.number_input("🏠 Home Team Win Rate (%):", min_value=0.0, max_value=1.0, step=0.01)
+    st.subheader("Team Performance Over Time")
+    plot_team_performance(selected_team, combined_data)
 
-    with col2:
-        AwayGoalAvg = st.number_input("✈️ Average Goals by Away Team (Last 5 Matches):", min_value=0.0, step=0.1)
-        AwayWinRate = st.number_input("✈️ Away Team Win Rate (%):", min_value=0.0, max_value=1.0, step=0.01)
+    st.subheader("Goal Distribution")
+    plot_goal_distribution(selected_team, combined_data)
 
-    # Predict outcome
-    if st.button("🔮 Predict Outcome"):
+    st.subheader("Match Outcomes")
+    plot_match_outcomes(selected_team, combined_data)
+
+    st.subheader("Head-to-Head Comparison")
+    team2 = st.selectbox("Select Opponent", [t for t in teams if t != selected_team])
+    plot_head_to_head(selected_team, team2, combined_data)
+
+    st.subheader("Predict Outcome")
+    HomeGoalAvg = st.number_input("Average Goals by Home Team (Last 5 Matches):", min_value=0.0, step=0.1)
+    AwayGoalAvg = st.number_input("Average Goals by Away Team (Last 5 Matches):", min_value=0.0, step=0.1)
+    HomeWinRate = st.number_input("Home Team Win Rate:", min_value=0.0, max_value=1.0, step=0.01)
+    AwayWinRate = st.number_input("Away Team Win Rate:", min_value=0.0, max_value=1.0, step=0.01)
+
+    if st.button("Predict Outcome"):
         input_data = np.array([[HomeGoalAvg, AwayGoalAvg, HomeWinRate, AwayWinRate]])
-        prediction = ensemble_model.predict(input_data)[0]
+        prediction = model.predict(input_data)[0]
         outcome_map = {0: "Home Win", 1: "Draw", 2: "Away Win"}
-        st.subheader("Prediction Result")
-        st.write(f"🏆 **Predicted Outcome:** {outcome_map[prediction]}")
-
-        # Add a chart for predicted probabilities
-        st.subheader("Prediction Probabilities")
-        probabilities = ensemble_model.predict_proba(input_data)[0]
-        prob_df = pd.DataFrame(probabilities, index=["Home Win", "Draw", "Away Win"], columns=["Probability"])
-        st.bar_chart(prob_df)
+        st.write(f"The predicted outcome is: **{outcome_map[prediction]}**")
 
 if __name__ == "__main__":
-    main()
+    app()
+
 
 
