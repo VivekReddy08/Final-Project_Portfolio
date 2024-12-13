@@ -15,50 +15,53 @@ import seaborn as sns
 import joblib
 
 # Load Data
-@st.cache
+@st.cache_data
 def load_data():
     combined_data = pd.read_csv("combined_data.csv")  # Replace with your dataset
     filtered_data = pd.read_csv("filtered_data.csv")  # Replace with your dataset
     return combined_data, filtered_data
 
 # Load Model
-@st.cache
+@st.cache_data
 def load_model():
     return joblib.load("ensemble_model.pkl")
 
 # Interactive Visualizations
 def plot_team_performance(team, data):
-    team_data = data[data['Team'] == team]
+    team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
     plt.figure(figsize=(10, 5))
-    sns.lineplot(x='MatchDate', y='Points', data=team_data, label='Points')
-    sns.lineplot(x='MatchDate', y='GoalsScored', data=team_data, label='Goals Scored')
+    sns.lineplot(x='Date', y='FTHG', data=team_data[team_data['HomeTeam'] == team], label='Home Goals')
+    sns.lineplot(x='Date', y='FTAG', data=team_data[team_data['AwayTeam'] == team], label='Away Goals')
     plt.title(f"Performance Over Time: {team}")
     plt.xlabel("Date")
-    plt.ylabel("Metrics")
+    plt.ylabel("Goals")
     plt.legend()
     st.pyplot(plt)
 
 def plot_goal_distribution(team, data):
-    team_data = data[data['Team'] == team]
+    team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
+    goals = []
+    goals.extend(team_data[team_data['HomeTeam'] == team]['FTHG'])
+    goals.extend(team_data[team_data['AwayTeam'] == team]['FTAG'])
     plt.figure(figsize=(10, 5))
-    sns.histplot(team_data['GoalsScored'], bins=10, kde=True)
+    sns.histplot(goals, bins=10, kde=True)
     plt.title(f"Goal Distribution for {team}")
     plt.xlabel("Goals")
     plt.ylabel("Frequency")
     st.pyplot(plt)
 
 def plot_match_outcomes(team, data):
-    team_data = data[data['Team'] == team]
-    outcomes = team_data['MatchOutcome'].value_counts()
+    team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
+    outcomes = team_data['FTR'].value_counts()
     plt.figure(figsize=(5, 5))
     outcomes.plot.pie(autopct='%1.1f%%', startangle=90, colors=['#4CAF50', '#FFC107', '#F44336'])
     plt.title(f"Match Outcomes for {team}")
     st.pyplot(plt)
 
 def plot_head_to_head(team1, team2, data):
-    h2h_data = data[(data['HomeTeam'] == team1) & (data['AwayTeam'] == team2) |
-                    (data['HomeTeam'] == team2) & (data['AwayTeam'] == team1)]
-    outcomes = h2h_data['MatchOutcome'].value_counts()
+    h2h_data = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
+                    ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
+    outcomes = h2h_data['FTR'].value_counts()
     plt.figure(figsize=(5, 5))
     outcomes.plot.pie(autopct='%1.1f%%', startangle=90, colors=['#4CAF50', '#FFC107', '#F44336'])
     plt.title(f"Head-to-Head: {team1} vs {team2}")
@@ -72,15 +75,18 @@ def app():
     combined_data, filtered_data = load_data()
     model = load_model()
 
-    # Debugging: Print column names
-    st.write("Columns in the dataset:", combined_data.columns)
+    # Show available columns
+    st.write("Columns in the dataset:")
+    st.write(combined_data.columns)
 
-    # Team Selection
-    teams = combined_data['Team'].unique() if 'Team' in combined_data.columns else []
-    if not teams:
-        st.error("The column 'Team' does not exist in the dataset. Please check the dataset structure.")
+    # Check if 'HomeTeam' and 'AwayTeam' exist or adjust
+    if 'HomeTeam' in combined_data.columns and 'AwayTeam' in combined_data.columns:
+        teams = pd.concat([combined_data['HomeTeam'], combined_data['AwayTeam']]).unique()
+    else:
+        st.error("The columns 'HomeTeam' and 'AwayTeam' do not exist in the dataset. Please check the dataset structure.")
         return
 
+    # Team Selection
     selected_team = st.selectbox("Select a Team", teams)
 
     st.subheader("Team Performance Over Time")
@@ -110,6 +116,8 @@ def app():
 
 if __name__ == "__main__":
     app()
+
+
 
 
 
