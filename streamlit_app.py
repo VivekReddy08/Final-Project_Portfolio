@@ -136,8 +136,8 @@ def league_prediction(data):
 def match_winner_predictor(data):
     try:
         st.subheader("Match Winner Predictor")
-        team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique())
-        team2 = st.selectbox("Select Team 2", [t for t in data['AwayTeam'].unique() if t != team1])
+        team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique(), key="team1")
+        team2 = st.selectbox("Select Team 2", [t for t in data['AwayTeam'].unique() if t != team1], key="team2")
 
         team1_data = data[data['HomeTeam'] == team1]
         team2_data = data[data['AwayTeam'] == team2]
@@ -175,13 +175,13 @@ def app():
 
     with tab2:
         st.header("Team Performance")
-        selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique())
+        selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
         plot_goal_distribution(combined_data)
 
     with tab3:
         st.header("Head-to-Head")
-        team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique())
-        team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1])
+        team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
+        team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1], key="h2h_team2")
         plot_head_to_head_bar(team1, team2, combined_data)
 
     with tab4:
