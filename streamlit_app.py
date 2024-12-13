@@ -200,11 +200,9 @@ def match_winner_predictor(data):
 
 # App Layout with Tabs
 def app():
-    background_image = get_base64("pl_logo.jpg")  # Replace with your logo
+    background_image = get_base64("pl_logo.jpg")
     set_background(background_image)
-
     st.title("AI-Powered Football Match Outcome Predictor")
-
     combined_data, filtered_data = load_data()
     model = load_model()
 
