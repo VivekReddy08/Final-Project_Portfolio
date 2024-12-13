@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.externals import joblib
+import joblib
 
 # Load Data
 @st.cache
@@ -103,6 +103,7 @@ def app():
 
 if __name__ == "__main__":
     app()
+
 
 
 
