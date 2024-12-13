@@ -209,20 +209,24 @@ def league_prediction(data):
         )
 
         # Dynamic Performance Insights: Total Clean Sheets
-        st.subheader("Performance Insights: Total Clean Sheets")
-        clean_sheet_data = prediction_df['Clean Sheets'].sort_values(ascending=False)
-        plt.figure(figsize=(10, 6))
-        clean_sheet_data.plot(kind="bar", color="skyblue")
-        plt.title("Clean Sheets by Teams", color="white")
-        plt.xlabel("Teams", color="white")
-        plt.ylabel("Clean Sheets", color="white")
-        plt.xticks(rotation=45, color="white")
-        plt.yticks(color="white")
-        st.pyplot(plt)
+        def plot_clean_sheets_chart(data):
+    try:
+        # Extract clean sheets data
+        clean_sheet_data = data['Clean Sheets'].sort_values(ascending=False)
 
+        # Plotting
+        plt.figure(figsize=(10, 6))
+        clean_sheet_data.plot(kind="bar", color="skyblue", edgecolor="black")
+        plt.title("Performance Insights: Total Clean Sheets", fontsize=16, color="white")
+        plt.xlabel("Teams", fontsize=12, color="white")
+        plt.ylabel("Clean Sheets", fontsize=12, color="white")
+        plt.xticks(rotation=45, fontsize=10, color="white", ha='right')  # Rotate for better readability
+        plt.yticks(fontsize=10, color="white")
+        plt.grid(axis='y', linestyle='--', alpha=0.6)  # Add gridlines for y-axis
+        st.pyplot(plt)
     except Exception as e:
-        logging.error(f"Error in league_prediction: {e}")
-        st.error(f"Error generating league predictions: {e}")
+        logging.error(f"Error in plot_clean_sheets_chart: {e}")
+        st.error(f"Error generating clean sheets chart: {e}")
 
 def match_winner_predictor(data):
     try:
