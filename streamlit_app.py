@@ -112,16 +112,19 @@ def plot_goal_distribution(data):
 def league_prediction(data):
     try:
         st.subheader("League Performance Prediction")
-        
-        # Add background for the table
-        salah_image = get_base64("mo_salah.jpg")  # Replace with the correct image path
+
+        # Load and encode the Mo Salah image
+        salah_image = get_base64("mo_salah.jpg")  # Ensure the correct path to the image
+
+        # Add a style block for the table with the background
         st.markdown(
             f"""
             <style>
-            .dataframe {{
+            .salah-background {{
                 background: url(data:image/png;base64,{salah_image});
                 background-size: cover;
                 color: white;
+                font-weight: bold;
             }}
             </style>
             """,
@@ -169,10 +172,20 @@ def league_prediction(data):
 
         # Convert dictionary to DataFrame
         prediction_df = pd.DataFrame(prediction_results).T
-        st.dataframe(prediction_df.style.highlight_max(axis=0, color="lightgreen"))
+        
+        # Apply custom CSS for the background
+        st.markdown(
+            f"""
+            <div class="salah-background">
+                {prediction_df.to_html(index=True, escape=False)}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
     except Exception as e:
         logging.error(f"Error in league_prediction: {e}")
         st.error(f"Error generating league predictions: {e}")
+
 def match_winner_predictor(data):
     try:
         st.subheader("Match Winner Predictor")
