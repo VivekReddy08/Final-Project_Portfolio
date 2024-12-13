@@ -7,27 +7,16 @@ Original file is located at
     https://colab.research.google.com/drive/1ngUXzmXhQ6yMQfM8lSxCc8NGVAtxL-jJ
 """
 
-!pip install streamlit==1.28.1
-!npm install -g localtunnel
-
 import streamlit as st
 import numpy as np
 import joblib
 import os
-from google.colab import files
-import threading
-import subprocess
 
-# Load or Upload the trained ensemble model
+# Load the trained ensemble model
 model_path = "ensemble_model.pkl"
 if not os.path.exists(model_path):
-    print("Uploading model...")
-    uploaded = files.upload()  # Prompt user to upload the model file
-    if "ensemble_model.pkl" in uploaded:
-        print("Model uploaded successfully.")
-    else:
-        print("Error: Model file not uploaded.")
-        exit()
+    st.error("Model file not found. Please ensure 'ensemble_model.pkl' is available in the repository.")
+    st.stop()
 
 ensemble_model = joblib.load(model_path)
 
@@ -47,19 +36,8 @@ def main():
         input_data = np.array([[HomeGoalAvg, AwayGoalAvg, HomeWinRate, AwayWinRate]])
         prediction = ensemble_model.predict(input_data)[0]
         outcome_map = {0: "Home Win", 1: "Draw", 2: "Away Win"}
+        st.subheader("Prediction Result")
         st.write(f"The predicted outcome is: **{outcome_map[prediction]}**")
 
 if __name__ == "__main__":
     main()
-
-# Start Streamlit
-print("Starting Streamlit...")
-subprocess.Popen(["streamlit", "run", "app.py"])
-
-# Start Localtunnel
-def start_localtunnel():
-    print("Starting Localtunnel...")
-    subprocess.run(["lt", "--port", "8501"])
-
-thread = threading.Thread(target=start_localtunnel)
-thread.start()
