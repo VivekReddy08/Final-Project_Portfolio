@@ -33,6 +33,12 @@ def set_background(image_file):
             background-size: cover;
             color: white;
         }}
+        .stMarkdown h1, h2, h3, h4, h5, h6 {{
+            color: white;
+        }}
+        .stMarkdown p {{
+            color: white;
+        }}
         </style>
         """,
         unsafe_allow_html=True
@@ -40,18 +46,13 @@ def set_background(image_file):
 
 # Enhanced Visualizations
 def plot_goals_heatmap(data):
-    try:
-        goals_data = data.groupby(['HomeTeam', 'AwayTeam']).agg({'FTHG': 'sum'}).reset_index()
-        pivot_data = goals_data.pivot_table(index="HomeTeam", columns="AwayTeam", values="FTHG", fill_value=0)
-        
-        plt.figure(figsize=(12, 8))
-        sns.heatmap(pivot_data, annot=True, fmt="d", cmap="coolwarm")
-        plt.title("Heatmap of Goals Scored (Home vs. Away)", fontsize=16)
-        plt.xlabel("Away Team")
-        plt.ylabel("Home Team")
-        st.pyplot(plt)
-    except Exception as e:
-        st.error(f"Error generating heatmap: {e}")
+    goals_data = data.groupby(['HomeTeam', 'AwayTeam']).agg({'FTHG': 'sum', 'FTAG': 'sum'}).reset_index()
+    pivot_data = goals_data.pivot("HomeTeam", "AwayTeam", "FTHG")
+
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(pivot_data, annot=True, fmt="g", cmap="coolwarm")
+    plt.title("Heatmap of Goals Scored (Home vs. Away)", color="white")
+    st.pyplot(plt)
 
 def plot_avg_goals_trend(data):
     data['MatchDate'] = pd.to_datetime(data['Date'])
@@ -61,9 +62,9 @@ def plot_avg_goals_trend(data):
 
     plt.figure(figsize=(10, 6))
     goals_trend.plot(kind='line', marker='o', color='blue')
-    plt.title("Average Goals Per Match Over Time")
-    plt.xlabel("Date")
-    plt.ylabel("Average Goals")
+    plt.title("Average Goals Per Match Over Time", color="white")
+    plt.xlabel("Date", color="white")
+    plt.ylabel("Average Goals", color="white")
     st.pyplot(plt)
 
 def plot_possession_trend(team, data):
@@ -74,10 +75,9 @@ def plot_possession_trend(team, data):
     plt.figure(figsize=(10, 6))
     sns.lineplot(x="MatchDate", y="PossessionHome", data=team_data, label="Home Possession")
     sns.lineplot(x="MatchDate", y="PossessionAway", data=team_data, label="Away Possession")
-    plt.title(f"Possession Trends: {team}")
-    plt.xlabel("Date")
-    plt.ylabel("Possession (%)")
-    plt.legend()
+    plt.title(f"Possession Trends: {team}", color="white")
+    plt.xlabel("Date", color="white")
+    plt.ylabel("Possession (%)", color="white")
     st.pyplot(plt)
 
 def plot_head_to_head_bar(team1, team2, data):
@@ -86,9 +86,9 @@ def plot_head_to_head_bar(team1, team2, data):
     outcomes = h2h_data['FTR'].value_counts()
 
     outcomes.plot(kind='bar', color=['green', 'yellow', 'red'], figsize=(8, 6))
-    plt.title(f"Head-to-Head Results: {team1} vs {team2}")
-    plt.xlabel("Result")
-    plt.ylabel("Count")
+    plt.title(f"Head-to-Head Results: {team1} vs {team2}", color="white")
+    plt.xlabel("Result", color="white")
+    plt.ylabel("Count", color="white")
     st.pyplot(plt)
 
 def league_prediction(data):
@@ -111,7 +111,7 @@ def league_prediction(data):
 # App Layout with Tabs
 def app():
     # Load Images
-    background_image = get_base64("pl_logo.jpg")
+    background_image = get_base64("pl_logo.jpg")  # Replace with your logo
     set_background(background_image)
 
     st.title("AI-Powered Football Match Outcome Predictor")
