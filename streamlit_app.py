@@ -37,12 +37,6 @@ def set_background(image_file):
             background-size: cover;
             color: white;
         }}
-        .stMarkdown h1, h2, h3, h4, h5, h6 {{
-            color: white;
-        }}
-        .stMarkdown p {{
-            color: white;
-        }}
         </style>
         """,
         unsafe_allow_html=True
@@ -112,11 +106,7 @@ def plot_goal_distribution(data):
 def league_prediction(data):
     try:
         st.subheader("League Performance Prediction")
-
-        # Load and encode the Steve Torres image
-        torres_image = get_base64("steve_torres.jpg")  # Ensure the correct path to the image
-
-        # Style block for the table with the background image
+        torres_image = get_base64("steve_torres.jpg")
         st.markdown(
             f"""
             <style>
@@ -148,8 +138,6 @@ def league_prediction(data):
             """,
             unsafe_allow_html=True
         )
-
-        # Add a 'Season' column and filter for the latest season
         data['Season'] = pd.to_datetime(data['Date']).dt.year
         latest_season = data['Season'].max()
         season_data = data[data['Season'] == latest_season]
@@ -159,8 +147,6 @@ def league_prediction(data):
         prediction_results = {}
         for team in teams:
             team_data = season_data[(season_data['HomeTeam'] == team) | (season_data['AwayTeam'] == team)]
-
-            # Compute stats
             total_matches = len(team_data)
             total_goals_scored = team_data.loc[team_data['HomeTeam'] == team, 'FTHG'].sum() + \
                                  team_data.loc[team_data['AwayTeam'] == team, 'FTAG'].sum()
@@ -171,34 +157,21 @@ def league_prediction(data):
                                        ((team_data['AwayTeam'] == team) & (team_data['FTR'] == 'A'))])
             draw_count = len(team_data[team_data['FTR'] == 'D'])
             loss_count = total_matches - win_count - draw_count
-
-            # Additional insights
-            goal_conversion_rate = (total_goals_scored / total_matches) * 100
-            clean_sheets = len(team_data[(team_data['HomeTeam'] == team) & (team_data['FTAG'] == 0)]) + \
-                           len(team_data[(team_data['AwayTeam'] == team) & (team_data['FTHG'] == 0)])
-
-            # Compute averages
             avg_goals_scored = total_goals_scored / total_matches
             avg_goals_conceded = total_goals_conceded / total_matches
             win_rate = (win_count / total_matches) * 100
             draw_rate = (draw_count / total_matches) * 100
             loss_rate = (loss_count / total_matches) * 100
 
-            # Store in dictionary
             prediction_results[team] = {
                 'Avg Goals Scored': round(avg_goals_scored, 2),
                 'Avg Goals Conceded': round(avg_goals_conceded, 2),
                 'Win Rate (%)': round(win_rate, 2),
                 'Draw Rate (%)': round(draw_rate, 2),
                 'Loss Rate (%)': round(loss_rate, 2),
-                'Goal Conversion Rate (%)': round(goal_conversion_rate, 2),
-                'Clean Sheets': clean_sheets
             }
 
-        # Convert dictionary to DataFrame
         prediction_df = pd.DataFrame(prediction_results).T
-
-        # Render the table with background styling
         st.markdown(
             f"""
             <div class="torres-background">
@@ -207,62 +180,31 @@ def league_prediction(data):
             """,
             unsafe_allow_html=True
         )
+    except Exception as e:
+        logging.error(f"Error in league_prediction: {e}")
+        st.error(f"Error generating league predictions: {e}")
 
 def match_winner_predictor(data):
     try:
         st.subheader("Match Winner Predictor")
-
         team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique(), key="match_team1")
         team2 = st.selectbox("Select Team 2", [t for t in data['AwayTeam'].unique() if t != team1], key="match_team2")
-
-        # Filter data for both teams
         team1_home = data[data['HomeTeam'] == team1]
         team2_away = data[data['AwayTeam'] == team2]
-
         team1_avg_goals = team1_home['FTHG'].mean()
         team2_avg_goals = team2_away['FTAG'].mean()
-
-        # Head-to-head stats
-        h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
-                   ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
-        team1_wins = len(h2h[h2h['FTR'] == 'H'])
-        team2_wins = len(h2h[h2h['FTR'] == 'A'])
-        draws = len(h2h[h2h['FTR'] == 'D'])
-        total_matches = len(h2h)
-
-        team1_win_prob = (team1_wins / total_matches) * 100 if total_matches > 0 else 0
-        team2_win_prob = (team2_wins / total_matches) * 100 if total_matches > 0 else 0
-        draw_prob = (draws / total_matches) * 100 if total_matches > 0 else 0
-
-        # Display Insights
-        st.write(f"**{team1} Avg Goals (Home):** {team1_avg_goals:.2f}")
-        st.write(f"**{team2} Avg Goals (Away):** {team2_avg_goals:.2f}")
-        st.write(f"**Head-to-Head (Total Matches):** {total_matches}")
-        st.write(f"**{team1} Win %:** {team1_win_prob:.2f}%")
-        st.write(f"**{team2} Win %:** {team2_win_prob:.2f}%")
-        st.write(f"**Draw %:** {draw_prob:.2f}%")
-
-        # Predict Winner
-        if team1_win_prob > team2_win_prob:
-            st.success(f"Predicted Winner: {team1}")
-        elif team2_win_prob > team1_win_prob:
-            st.success(f"Predicted Winner: {team2}")
-        else:
-            st.info("It's likely to be a draw!")
+        st.write(f"{team1}: {team1_avg_goals:.2f}")
+        st.write(f"{team2}: {team2_avg_goals:.2f}")
     except Exception as e:
-        logging.error(f"Error in match_winner_predictor: {e}")
-        st.error(f"Error predicting match winner: {e}")
-
+        st.error(f"Error in match_winner_predictor: {e}")
 
 # App Layout with Tabs
 def app():
-    # Load Images
     background_image = get_base64("pl_logo.jpg")  # Replace with your logo
     set_background(background_image)
 
     st.title("AI-Powered Football Match Outcome Predictor")
 
-    # Load data and model
     combined_data, filtered_data = load_data()
     model = load_model()
 
