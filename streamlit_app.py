@@ -188,7 +188,7 @@ def match_winner_predictor(data):
     try:
         st.subheader("Match Winner Predictor")
 
-        # Select teams
+        # Team Selection
         team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique(), key="match_team1")
         team2 = st.selectbox("Select Team 2", [t for t in data['AwayTeam'].unique() if t != team1], key="match_team2")
 
@@ -196,11 +196,11 @@ def match_winner_predictor(data):
         team1_home = data[data['HomeTeam'] == team1]
         team2_away = data[data['AwayTeam'] == team2]
 
-        # Calculate average goals
+        # Average Goals
         team1_avg_goals = team1_home['FTHG'].mean()
         team2_avg_goals = team2_away['FTAG'].mean()
 
-        # Head-to-head stats
+        # Head-to-Head Stats
         h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
                    ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
         team1_wins = len(h2h[h2h['FTR'] == 'H'])
@@ -212,17 +212,6 @@ def match_winner_predictor(data):
         team2_win_prob = (team2_wins / total_matches) * 100 if total_matches > 0 else 0
         draw_prob = (draws / total_matches) * 100 if total_matches > 0 else 0
 
-        # Possession prediction
-        team1_avg_possession = team1_home['PossessionHome'].mean() if 'PossessionHome' in team1_home else None
-        team2_avg_possession = team2_away['PossessionAway'].mean() if 'PossessionAway' in team2_away else None
-
-        # Over/Under Prediction
-        combined_avg_goals = team1_avg_goals + team2_avg_goals
-        over_under_2_5 = "Over" if combined_avg_goals > 2.5 else "Under"
-
-        # Goal margin prediction
-        predicted_goal_margin = abs(team1_avg_goals - team2_avg_goals)
-
         # Display Insights
         st.write(f"**{team1} Avg Goals (Home):** {team1_avg_goals:.2f}")
         st.write(f"**{team2} Avg Goals (Away):** {team2_avg_goals:.2f}")
@@ -230,22 +219,57 @@ def match_winner_predictor(data):
         st.write(f"**{team1} Win %:** {team1_win_prob:.2f}%")
         st.write(f"**{team2} Win %:** {team2_win_prob:.2f}%")
         st.write(f"**Draw %:** {draw_prob:.2f}%")
-        if team1_avg_possession and team2_avg_possession:
-            st.write(f"**{team1} Possession Avg (Home):** {team1_avg_possession:.2f}%")
-            st.write(f"**{team2} Possession Avg (Away):** {team2_avg_possession:.2f}%")
-        st.write(f"**Over/Under 2.5 Goals:** {over_under_2_5}")
-        st.write(f"**Predicted Goal Margin:** {predicted_goal_margin:.2f}")
+
+        # Win Probability Pie Chart
+        try:
+            labels = [f"{team1} Win", f"{team2} Win", "Draw"]
+            probabilities = [team1_win_prob, team2_win_prob, draw_prob]
+
+            plt.figure(figsize=(6, 6))
+            plt.pie(probabilities, labels=labels, autopct='%1.1f%%', startangle=140, colors=['#ff9999', '#66b3ff', '#99ff99'])
+            plt.title("Win Probability")
+            st.pyplot(plt)
+        except Exception as e:
+            logging.error(f"Error in Win Probability Pie Chart: {e}")
+            st.error("Error generating win probability pie chart.")
+
+        # Goals Distribution Histogram
+        try:
+            goals = h2h['FTHG'].tolist() + h2h['FTAG'].tolist()
+            plt.figure(figsize=(8, 6))
+            plt.hist(goals, bins=5, color='purple', alpha=0.7, edgecolor='black')
+            plt.title("Goals Distribution in Head-to-Head Matches", color="white")
+            plt.xlabel("Goals", color="white")
+            plt.ylabel("Frequency", color="white")
+            st.pyplot(plt)
+        except Exception as e:
+            logging.error(f"Error in Goals Distribution Histogram: {e}")
+            st.error("Error generating goals distribution histogram.")
+
+        # Head-to-Head Result Bar Chart
+        try:
+            h2h_results = pd.Series({"Team 1 Wins": team1_wins, "Team 2 Wins": team2_wins, "Draws": draws})
+            plt.figure(figsize=(8, 6))
+            h2h_results.plot(kind='bar', color=['#ff9999', '#66b3ff', '#99ff99'], alpha=0.8, edgecolor='black')
+            plt.title("Head-to-Head Results", color="white")
+            plt.xlabel("Result", color="white")
+            plt.ylabel("Frequency", color="white")
+            st.pyplot(plt)
+        except Exception as e:
+            logging.error(f"Error in Head-to-Head Result Bar Chart: {e}")
+            st.error("Error generating head-to-head result bar chart.")
 
         # Predict Winner
-        if team1_avg_goals > team2_avg_goals:
+        if team1_win_prob > team2_win_prob:
             st.success(f"Predicted Winner: {team1}")
-        elif team2_avg_goals > team1_avg_goals:
+        elif team2_win_prob > team1_win_prob:
             st.success(f"Predicted Winner: {team2}")
         else:
             st.info("It's likely to be a draw!")
     except Exception as e:
         logging.error(f"Error in match_winner_predictor: {e}")
         st.error(f"Error predicting match winner: {e}")
+
 
 
 
