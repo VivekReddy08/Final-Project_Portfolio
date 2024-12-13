@@ -33,12 +33,6 @@ def set_background(image_file):
             background-size: cover;
             color: white;
         }}
-        .stMarkdown h1, h2, h3, h4, h5, h6 {{
-            color: white;
-        }}
-        .stMarkdown p {{
-            color: white;
-        }}
         </style>
         """,
         unsafe_allow_html=True
@@ -93,25 +87,28 @@ def app():
     combined_data, filtered_data = load_data()
     model = load_model()
 
-    st.sidebar.header("Statistics Panels")
-
-    if st.sidebar.checkbox("League-Wide Overview"):
+    # Tab-Based Navigation
+    tabs = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
+    
+    with tabs[0]:
+        st.header("League Overview")
         league_overview(combined_data)
-
-    teams = pd.concat([combined_data['HomeTeam'], combined_data['AwayTeam']]).unique()
-
-    if st.sidebar.checkbox("Team Performance"):
-        selected_team = st.sidebar.selectbox("Select a Team", teams)
+    
+    with tabs[1]:
+        st.header("Team Performance")
+        teams = pd.concat([combined_data['HomeTeam'], combined_data['AwayTeam']]).unique()
+        selected_team = st.selectbox("Select a Team", teams)
         plot_team_performance(selected_team, combined_data)
-
-    if st.sidebar.checkbox("Head-to-Head Comparison"):
-        team1 = st.sidebar.selectbox("Select Team 1", teams)
-        team2 = st.sidebar.selectbox("Select Team 2", [t for t in teams if t != team1])
+    
+    with tabs[2]:
+        st.header("Head-to-Head Comparison")
+        team1 = st.selectbox("Select Team 1", teams)
+        team2 = st.selectbox("Select Team 2", [t for t in teams if t != team1])
         plot_head_to_head(team1, team2, combined_data)
         compare_teams(team1, team2, combined_data)
-
-    if st.sidebar.checkbox("Match Prediction"):
-        st.subheader("Predict Outcome")
+    
+    with tabs[3]:
+        st.header("Match Prediction")
         HomeGoalAvg = st.number_input("Avg Goals Home Team (Last 5 Matches):", min_value=0.0, step=0.1)
         AwayGoalAvg = st.number_input("Avg Goals Away Team (Last 5 Matches):", min_value=0.0, step=0.1)
         HomeWinRate = st.number_input("Home Win Rate:", min_value=0.0, max_value=1.0, step=0.01)
@@ -122,9 +119,6 @@ def app():
             prediction = model.predict(input_data)[0]
             outcome_map = {0: "Home Win", 1: "Draw", 2: "Away Win"}
             st.write(f"The predicted outcome is: **{outcome_map[prediction]}**")
-
-    if st.sidebar.checkbox("League-Wide Prediction"):
-        league_prediction(model, combined_data)
 
 if __name__ == "__main__":
     app()
