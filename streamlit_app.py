@@ -233,31 +233,58 @@ def match_winner_predictor(data):
             logging.error(f"Error in Win Probability Pie Chart: {e}")
             st.error("Error generating win probability pie chart.")
 
-        # Goals Distribution Histogram
-        try:
-            goals = h2h['FTHG'].tolist() + h2h['FTAG'].tolist()
-            plt.figure(figsize=(8, 6))
-            plt.hist(goals, bins=5, color='purple', alpha=0.7, edgecolor='black')
-            plt.title("Goals Distribution in Head-to-Head Matches", color="white")
-            plt.xlabel("Goals", color="white")
-            plt.ylabel("Frequency", color="white")
-            st.pyplot(plt)
-        except Exception as e:
-            logging.error(f"Error in Goals Distribution Histogram: {e}")
-            st.error("Error generating goals distribution histogram.")
+       
+        # Improved Goals Distribution Histogram
+def plot_goals_distribution(data, team1, team2):
+    try:
+        h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
+                   ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
+        goals = h2h['FTHG'].tolist() + h2h['FTAG'].tolist()
 
-        # Head-to-Head Result Bar Chart
-        try:
-            h2h_results = pd.Series({"Team 1 Wins": team1_wins, "Team 2 Wins": team2_wins, "Draws": draws})
-            plt.figure(figsize=(8, 6))
-            h2h_results.plot(kind='bar', color=['#ff9999', '#66b3ff', '#99ff99'], alpha=0.8, edgecolor='black')
-            plt.title("Head-to-Head Results", color="white")
-            plt.xlabel("Result", color="white")
-            plt.ylabel("Frequency", color="white")
-            st.pyplot(plt)
-        except Exception as e:
-            logging.error(f"Error in Head-to-Head Result Bar Chart: {e}")
-            st.error("Error generating head-to-head result bar chart.")
+        plt.figure(figsize=(10, 6))
+        n, bins, patches = plt.hist(goals, bins=range(0, max(goals) + 2), color='skyblue', edgecolor='black', alpha=0.8)
+        plt.title(f"Goals Distribution in Matches between {team1} and {team2}", fontsize=14, color="white")
+        plt.xlabel("Number of Goals Scored", fontsize=12, color="white")
+        plt.ylabel("Frequency of Matches", fontsize=12, color="white")
+        plt.grid(axis="y", linestyle="--", alpha=0.7)
+
+        # Annotating each bar
+        for count, x in zip(n, bins):
+            if count > 0:
+                plt.text(x + 0.5, count, f'{int(count)}', ha='center', va='bottom', fontsize=10, color="white")
+
+        st.pyplot(plt)
+    except Exception as e:
+        logging.error(f"Error in Goals Distribution Histogram: {e}")
+        st.error("Error generating goals distribution histogram.")
+
+
+        # Improved Head-to-Head Result Bar Chart
+def plot_h2h_results_chart(data, team1, team2):
+    try:
+        h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
+                   ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
+        team1_wins = len(h2h[h2h['FTR'] == 'H'])
+        team2_wins = len(h2h[h2h['FTR'] == 'A'])
+        draws = len(h2h[h2h['FTR'] == 'D'])
+        results = {"Team 1 Wins": team1_wins, "Team 2 Wins": team2_wins, "Draws": draws}
+
+        plt.figure(figsize=(8, 6))
+        bars = plt.bar(results.keys(), results.values(), color=['#1f77b4', '#ff7f0e', '#2ca02c'], edgecolor="black", alpha=0.9)
+        plt.title(f"Head-to-Head Results: {team1} vs {team2}", fontsize=14, color="white")
+        plt.xlabel("Result", fontsize=12, color="white")
+        plt.ylabel("Count", fontsize=12, color="white")
+        plt.grid(axis="y", linestyle="--", alpha=0.7)
+
+        # Annotating each bar
+        for bar in bars:
+            plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), f'{int(bar.get_height())}', 
+                     ha='center', va='bottom', fontsize=10, color="white")
+
+        st.pyplot(plt)
+    except Exception as e:
+        logging.error(f"Error in Head-to-Head Result Bar Chart: {e}")
+        st.error("Error generating head-to-head result bar chart.")
 
         # Predict Winner
         if team1_win_prob > team2_win_prob:
