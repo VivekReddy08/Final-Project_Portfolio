@@ -9,6 +9,8 @@ Original file is located at
 
 import streamlit as st
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 import joblib
 import os
 
@@ -20,24 +22,44 @@ if not os.path.exists(model_path):
 
 ensemble_model = joblib.load(model_path)
 
-# Streamlit app
+# Streamlit app with enhanced UI
 def main():
-    st.title("AI-Powered Football Match Outcome Predictor")
-    st.header("Input Match Details")
+    st.set_page_config(page_title="Football Outcome Predictor", layout="wide")
+    st.title("⚽ AI-Powered Football Match Outcome Predictor")
+    st.sidebar.title("Prediction Settings")
 
-    # User inputs for features
-    HomeGoalAvg = st.number_input("Average Goals by Home Team (Last 5 Matches):", min_value=0.0, step=0.1)
-    AwayGoalAvg = st.number_input("Average Goals by Away Team (Last 5 Matches):", min_value=0.0, step=0.1)
-    HomeWinRate = st.number_input("Home Team Win Rate:", min_value=0.0, max_value=1.0, step=0.01)
-    AwayWinRate = st.number_input("Away Team Win Rate:", min_value=0.0, max_value=1.0, step=0.01)
+    # Layout with columns
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.header("Input Match Details")
+        HomeGoalAvg = st.number_input("🏠 Average Goals by Home Team (Last 5 Matches):", min_value=0.0, step=0.1)
+        AwayGoalAvg = st.number_input("✈️ Average Goals by Away Team (Last 5 Matches):", min_value=0.0, step=0.1)
+        HomeWinRate = st.number_input("🏠 Home Team Win Rate (%):", min_value=0.0, max_value=1.0, step=0.01)
+        AwayWinRate = st.number_input("✈️ Away Team Win Rate (%):", min_value=0.0, max_value=1.0, step=0.01)
+
+    with col2:
+        st.header("Visualizations")
+        # Example chart (to be replaced with actual data visualizations)
+        sample_data = {"Matches": ["Match1", "Match2", "Match3", "Match4", "Match5"],
+                       "Goals": [2, 3, 1, 4, 2]}
+        df = pd.DataFrame(sample_data)
+        st.bar_chart(df.set_index("Matches"))
 
     # Predict outcome
-    if st.button("Predict Outcome"):
+    if st.button("🔮 Predict Outcome"):
         input_data = np.array([[HomeGoalAvg, AwayGoalAvg, HomeWinRate, AwayWinRate]])
         prediction = ensemble_model.predict(input_data)[0]
         outcome_map = {0: "Home Win", 1: "Draw", 2: "Away Win"}
         st.subheader("Prediction Result")
-        st.write(f"The predicted outcome is: **{outcome_map[prediction]}**")
+        st.write(f"🏆 **Predicted Outcome:** {outcome_map[prediction]}")
+
+        # Add a chart for predicted probabilities
+        st.subheader("Prediction Probabilities")
+        probabilities = ensemble_model.predict_proba(input_data)[0]
+        prob_df = pd.DataFrame(probabilities, index=["Home Win", "Draw", "Away Win"], columns=["Probability"])
+        st.bar_chart(prob_df)
 
 if __name__ == "__main__":
     main()
+
