@@ -23,13 +23,13 @@ def get_base64(file_path):
     with open(file_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-# Set Background Image
+# Set Background Image with Gradient
 def set_background(image_file):
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background: url(data:image/png;base64,{image_file});
+            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url(data:image/png;base64,{image_file});
             background-size: cover;
             color: white;
         }}
@@ -39,79 +39,76 @@ def set_background(image_file):
         .stMarkdown p {{
             color: white;
         }}
-        .gradient-text {{
-            background: -webkit-linear-gradient(#f39c12, #e74c3c);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
-# Interactive Visualizations
-def plot_team_performance(team, data):
+# Enhanced Visualizations
+def plot_goals_heatmap(data):
+    goals_data = data.groupby(['HomeTeam', 'AwayTeam']).agg({'FTHG': 'sum', 'FTAG': 'sum'}).reset_index()
+    pivot_data = goals_data.pivot("HomeTeam", "AwayTeam", "FTHG")
+
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(pivot_data, annot=True, fmt="g", cmap="coolwarm")
+    plt.title("Heatmap of Goals Scored (Home vs. Away)", color="white")
+    st.pyplot(plt)
+
+def plot_avg_goals_trend(data):
+    data['MatchDate'] = pd.to_datetime(data['Date'])
+    data.sort_values(by="MatchDate", inplace=True)
+    data['TotalGoals'] = data['FTHG'] + data['FTAG']
+    goals_trend = data.groupby(data['MatchDate'].dt.to_period("M"))['TotalGoals'].mean()
+
+    plt.figure(figsize=(10, 6))
+    goals_trend.plot(kind='line', marker='o', color='blue')
+    plt.title("Average Goals Per Match Over Time", color="white")
+    plt.xlabel("Date", color="white")
+    plt.ylabel("Average Goals", color="white")
+    st.pyplot(plt)
+
+def plot_possession_trend(team, data):
     team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
     team_data['MatchDate'] = pd.to_datetime(team_data['Date'])
-    team_data = team_data.sort_values('MatchDate')
+    team_data.sort_values(by="MatchDate", inplace=True)
 
-    plt.figure(figsize=(10, 5))
-    sns.lineplot(x='MatchDate', y='FTHG', data=team_data, label='Goals Scored')
-    sns.lineplot(x='MatchDate', y='FTAG', data=team_data, label='Goals Conceded')
-    plt.title(f"Performance Over Time: {team}", color="white")
+    plt.figure(figsize=(10, 6))
+    sns.lineplot(x="MatchDate", y="PossessionHome", data=team_data, label="Home Possession")
+    sns.lineplot(x="MatchDate", y="PossessionAway", data=team_data, label="Away Possession")
+    plt.title(f"Possession Trends: {team}", color="white")
     plt.xlabel("Date", color="white")
-    plt.ylabel("Goals", color="white")
-    plt.legend()
+    plt.ylabel("Possession (%)", color="white")
     st.pyplot(plt)
 
-# Other visualizations like goal distribution, match outcomes, etc.
-def plot_goal_distribution(team, data):
-    team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
-    goals = (
-        team_data['FTHG'][team_data['HomeTeam'] == team].sum() + 
-        team_data['FTAG'][team_data['AwayTeam'] == team].sum()
-    )
-
-    plt.figure(figsize=(10, 5))
-    sns.histplot([goals], bins=10, kde=True)
-    plt.title(f"Goal Distribution for {team}", color="white")
-    plt.xlabel("Goals", color="white")
-    plt.ylabel("Frequency", color="white")
-    st.pyplot(plt)
-
-def plot_head_to_head(team1, team2, data):
+def plot_head_to_head_bar(team1, team2, data):
     h2h_data = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
                     ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
     outcomes = h2h_data['FTR'].value_counts()
-    plt.figure(figsize=(5, 5))
-    outcomes.plot.pie(autopct='%1.1f%%', startangle=90, colors=['#4CAF50', '#FFC107', '#F44336'])
-    plt.title(f"Head-to-Head: {team1} vs {team2}", color="white")
+
+    outcomes.plot(kind='bar', color=['green', 'yellow', 'red'], figsize=(8, 6))
+    plt.title(f"Head-to-Head Results: {team1} vs {team2}", color="white")
+    plt.xlabel("Result", color="white")
+    plt.ylabel("Count", color="white")
     st.pyplot(plt)
 
-# League-Wide Performance Overview
-def league_overview(data):
-    st.header("League Overview")
+def league_prediction(data):
+    st.subheader("League Performance Prediction")
+    teams = pd.concat([data['HomeTeam'], data['AwayTeam']]).unique()
 
-    total_matches = len(data)
-    total_goals = data['FTHG'].sum() + data['FTAG'].sum()
-    avg_goals_per_match = total_goals / total_matches
+    prediction_results = {}
+    for team in teams:
+        team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
+        avg_goals = team_data['FTHG'].mean() + team_data['FTAG'].mean()
+        win_percentage = len(team_data[team_data['FTR'] == 'H']) / len(team_data)
+        prediction_results[team] = {
+            'Avg Goals': avg_goals,
+            'Win %': win_percentage * 100
+        }
 
-    st.write("**Total Matches Played:**", total_matches)
-    st.write("**Total Goals Scored:**", total_goals)
-    st.write("**Average Goals per Match:**", round(avg_goals_per_match, 2))
+    prediction_df = pd.DataFrame(prediction_results).T
+    st.dataframe(prediction_df.style.highlight_max(axis=0, color="lightgreen"))
 
-    goals_per_team = data.groupby('HomeTeam')[['FTHG', 'FTAG']].sum()
-    goals_per_team['TotalGoals'] = goals_per_team['FTHG'] + goals_per_team['FTAG']
-    goals_per_team.sort_values(by='TotalGoals', ascending=False, inplace=True)
-
-    plt.figure(figsize=(10, 5))
-    sns.barplot(x=goals_per_team.index, y=goals_per_team['TotalGoals'])
-    plt.xticks(rotation=90)
-    plt.title("Goals Scored by Teams", color="white")
-    plt.xlabel("Teams", color="white")
-    plt.ylabel("Total Goals", color="white")
-    st.pyplot(plt)
-
+# App Layout with Tabs
 def app():
     # Load Images
     background_image = get_base64("pl_logo.jpg")  # Replace with your logo
@@ -119,40 +116,31 @@ def app():
 
     st.title("AI-Powered Football Match Outcome Predictor")
 
-    # Tabs for navigation
-    tabs = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
-
+    # Load data and model
     combined_data, filtered_data = load_data()
     model = load_model()
 
-    with tabs[0]:
-        league_overview(combined_data)
+    tab1, tab2, tab3, tab4 = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
 
-    with tabs[1]:
+    with tab1:
+        st.header("League Overview")
+        plot_goals_heatmap(combined_data)
+        plot_avg_goals_trend(combined_data)
+
+    with tab2:
         st.header("Team Performance")
-        teams = pd.concat([combined_data['HomeTeam'], combined_data['AwayTeam']]).unique()
-        selected_team = st.selectbox("Select a Team", teams)
-        plot_team_performance(selected_team, combined_data)
+        selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique())
+        plot_possession_trend(selected_team, combined_data)
 
-    with tabs[2]:
-        st.header("Head-to-Head Comparison")
-        teams = pd.concat([combined_data['HomeTeam'], combined_data['AwayTeam']]).unique()
-        team1 = st.selectbox("Select Team 1", teams)
-        team2 = st.selectbox("Select Team 2", [t for t in teams if t != team1])
-        plot_head_to_head(team1, team2, combined_data)
+    with tab3:
+        st.header("Head-to-Head")
+        team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique())
+        team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1])
+        plot_head_to_head_bar(team1, team2, combined_data)
 
-    with tabs[3]:
+    with tab4:
         st.header("Match Prediction")
-        HomeGoalAvg = st.number_input("Avg Goals Home Team (Last 5 Matches):", min_value=0.0, step=0.1)
-        AwayGoalAvg = st.number_input("Avg Goals Away Team (Last 5 Matches):", min_value=0.0, step=0.1)
-        HomeWinRate = st.number_input("Home Win Rate:", min_value=0.0, max_value=1.0, step=0.01)
-        AwayWinRate = st.number_input("Away Win Rate:", min_value=0.0, max_value=1.0, step=0.01)
-
-        if st.button("Predict Outcome"):
-            input_data = np.array([[HomeGoalAvg, AwayGoalAvg, HomeWinRate, AwayWinRate]])
-            prediction = model.predict(input_data)[0]
-            outcome_map = {0: "Home Win", 1: "Draw", 2: "Away Win"}
-            st.write(f"The predicted outcome is: **{outcome_map[prediction]}**")
+        league_prediction(combined_data)
 
 if __name__ == "__main__":
     app()
