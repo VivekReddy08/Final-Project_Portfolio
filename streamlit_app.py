@@ -187,16 +187,50 @@ def league_prediction(data):
 def match_winner_predictor(data):
     try:
         st.subheader("Match Winner Predictor")
+
+        # Select teams
         team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique(), key="match_team1")
         team2 = st.selectbox("Select Team 2", [t for t in data['AwayTeam'].unique() if t != team1], key="match_team2")
+
+        # Filter data for both teams
         team1_home = data[data['HomeTeam'] == team1]
         team2_away = data[data['AwayTeam'] == team2]
+
+        # Calculate average goals
         team1_avg_goals = team1_home['FTHG'].mean()
         team2_avg_goals = team2_away['FTAG'].mean()
-        st.write(f"{team1}: {team1_avg_goals:.2f}")
-        st.write(f"{team2}: {team2_avg_goals:.2f}")
+
+        # Head-to-head stats
+        h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
+                   ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
+        team1_wins = len(h2h[h2h['FTR'] == 'H'])
+        team2_wins = len(h2h[h2h['FTR'] == 'A'])
+        draws = len(h2h[h2h['FTR'] == 'D'])
+        total_matches = len(h2h)
+
+        team1_win_prob = (team1_wins / total_matches) * 100 if total_matches > 0 else 0
+        team2_win_prob = (team2_wins / total_matches) * 100 if total_matches > 0 else 0
+        draw_prob = (draws / total_matches) * 100 if total_matches > 0 else 0
+
+        # Display Insights
+        st.write(f"**{team1} Avg Goals (Home):** {team1_avg_goals:.2f}")
+        st.write(f"**{team2} Avg Goals (Away):** {team2_avg_goals:.2f}")
+        st.write(f"**Head-to-Head (Total Matches):** {total_matches}")
+        st.write(f"**{team1} Win %:** {team1_win_prob:.2f}%")
+        st.write(f"**{team2} Win %:** {team2_win_prob:.2f}%")
+        st.write(f"**Draw %:** {draw_prob:.2f}%")
+
+        # Predict Winner
+        if team1_avg_goals > team2_avg_goals:
+            st.success(f"Predicted Winner: {team1}")
+        elif team2_avg_goals > team1_avg_goals:
+            st.success(f"Predicted Winner: {team2}")
+        else:
+            st.info("It's likely to be a draw!")
     except Exception as e:
-        st.error(f"Error in match_winner_predictor: {e}")
+        logging.error(f"Error in match_winner_predictor: {e}")
+        st.error(f"Error predicting match winner: {e}")
+
 
 # App Layout with Tabs
 def app():
