@@ -183,4 +183,5 @@ def app():
         st.write(f"The predicted outcome is: **{outcome_map[prediction]}**")
 
 if __name__ == "__main__":
-app()
+    app()
+
