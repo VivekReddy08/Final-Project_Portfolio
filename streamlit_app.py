@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
 import base64
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.ERROR)
 
 # Load Data
 @st.cache_data
@@ -46,67 +50,90 @@ def set_background(image_file):
 
 # Enhanced Visualizations
 def plot_goals_heatmap(data):
-    goals_data = data.groupby(['HomeTeam', 'AwayTeam']).agg({'FTHG': 'sum', 'FTAG': 'sum'}).reset_index()
-    pivot_data = goals_data.pivot("HomeTeam", "AwayTeam", "FTHG")
+    try:
+        goals_data = data.groupby(['HomeTeam', 'AwayTeam']).agg({'FTHG': 'sum', 'FTAG': 'sum'}).reset_index()
+        pivot_data = goals_data.pivot(index="HomeTeam", columns="AwayTeam", values="FTHG")
+        
+        # Replace NaN values with 0 for the heatmap
+        pivot_data = pivot_data.fillna(0)
 
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(pivot_data, annot=True, fmt="g", cmap="coolwarm")
-    plt.title("Heatmap of Goals Scored (Home vs. Away)", color="white")
-    st.pyplot(plt)
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(pivot_data, annot=True, fmt="g", cmap="coolwarm")
+        plt.title("Heatmap of Goals Scored (Home vs. Away)", color="white")
+        st.pyplot(plt)
+    except Exception as e:
+        logging.error(f"Error in plot_goals_heatmap: {e}")
+        st.error(f"Error generating heatmap: {e}")
 
 def plot_avg_goals_trend(data):
-    data['MatchDate'] = pd.to_datetime(data['Date'])
-    data.sort_values(by="MatchDate", inplace=True)
-    data['TotalGoals'] = data['FTHG'] + data['FTAG']
-    goals_trend = data.groupby(data['MatchDate'].dt.to_period("M"))['TotalGoals'].mean()
+    try:
+        data['MatchDate'] = pd.to_datetime(data['Date'])
+        data.sort_values(by="MatchDate", inplace=True)
+        data['TotalGoals'] = data['FTHG'] + data['FTAG']
+        goals_trend = data.groupby(data['MatchDate'].dt.to_period("M"))['TotalGoals'].mean()
 
-    plt.figure(figsize=(10, 6))
-    goals_trend.plot(kind='line', marker='o', color='blue')
-    plt.title("Average Goals Per Match Over Time", color="white")
-    plt.xlabel("Date", color="white")
-    plt.ylabel("Average Goals", color="white")
-    st.pyplot(plt)
+        plt.figure(figsize=(10, 6))
+        plt.plot(goals_trend.index.to_timestamp(), goals_trend.values, marker='o', color='blue')
+        plt.title("Average Goals Per Match Over Time", color="white")
+        plt.xlabel("Date", color="white")
+        plt.ylabel("Average Goals", color="white")
+        st.pyplot(plt)
+    except Exception as e:
+        logging.error(f"Error in plot_avg_goals_trend: {e}")
+        st.error(f"Error generating average goals trend: {e}")
 
 def plot_possession_trend(team, data):
-    team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
-    team_data['MatchDate'] = pd.to_datetime(team_data['Date'])
-    team_data.sort_values(by="MatchDate", inplace=True)
+    try:
+        team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
+        team_data['MatchDate'] = pd.to_datetime(team_data['Date'])
+        team_data.sort_values(by="MatchDate", inplace=True)
 
-    plt.figure(figsize=(10, 6))
-    sns.lineplot(x="MatchDate", y="PossessionHome", data=team_data, label="Home Possession")
-    sns.lineplot(x="MatchDate", y="PossessionAway", data=team_data, label="Away Possession")
-    plt.title(f"Possession Trends: {team}", color="white")
-    plt.xlabel("Date", color="white")
-    plt.ylabel("Possession (%)", color="white")
-    st.pyplot(plt)
+        plt.figure(figsize=(10, 6))
+        sns.lineplot(x="MatchDate", y="PossessionHome", data=team_data, label="Home Possession")
+        sns.lineplot(x="MatchDate", y="PossessionAway", data=team_data, label="Away Possession")
+        plt.title(f"Possession Trends: {team}", color="white")
+        plt.xlabel("Date", color="white")
+        plt.ylabel("Possession (%)", color="white")
+        st.pyplot(plt)
+    except Exception as e:
+        logging.error(f"Error in plot_possession_trend: {e}")
+        st.error(f"Error generating possession trend: {e}")
 
 def plot_head_to_head_bar(team1, team2, data):
-    h2h_data = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
-                    ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
-    outcomes = h2h_data['FTR'].value_counts()
+    try:
+        h2h_data = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
+                        ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
+        outcomes = h2h_data['FTR'].value_counts()
 
-    outcomes.plot(kind='bar', color=['green', 'yellow', 'red'], figsize=(8, 6))
-    plt.title(f"Head-to-Head Results: {team1} vs {team2}", color="white")
-    plt.xlabel("Result", color="white")
-    plt.ylabel("Count", color="white")
-    st.pyplot(plt)
+        outcomes.plot(kind='bar', color=['green', 'yellow', 'red'], figsize=(8, 6))
+        plt.title(f"Head-to-Head Results: {team1} vs {team2}", color="white")
+        plt.xlabel("Result", color="white")
+        plt.ylabel("Count", color="white")
+        st.pyplot(plt)
+    except Exception as e:
+        logging.error(f"Error in plot_head_to_head_bar: {e}")
+        st.error(f"Error generating head-to-head bar chart: {e}")
 
 def league_prediction(data):
-    st.subheader("League Performance Prediction")
-    teams = pd.concat([data['HomeTeam'], data['AwayTeam']]).unique()
+    try:
+        st.subheader("League Performance Prediction")
+        teams = pd.concat([data['HomeTeam'], data['AwayTeam']]).unique()
 
-    prediction_results = {}
-    for team in teams:
-        team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
-        avg_goals = team_data['FTHG'].mean() + team_data['FTAG'].mean()
-        win_percentage = len(team_data[team_data['FTR'] == 'H']) / len(team_data)
-        prediction_results[team] = {
-            'Avg Goals': avg_goals,
-            'Win %': win_percentage * 100
-        }
+        prediction_results = {}
+        for team in teams:
+            team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
+            avg_goals = team_data['FTHG'].mean() + team_data['FTAG'].mean()
+            win_percentage = len(team_data[team_data['FTR'] == 'H']) / len(team_data)
+            prediction_results[team] = {
+                'Avg Goals': avg_goals,
+                'Win %': win_percentage * 100
+            }
 
-    prediction_df = pd.DataFrame(prediction_results).T
-    st.dataframe(prediction_df.style.highlight_max(axis=0, color="lightgreen"))
+        prediction_df = pd.DataFrame(prediction_results).T
+        st.dataframe(prediction_df.style.highlight_max(axis=0, color="lightgreen"))
+    except Exception as e:
+        logging.error(f"Error in league_prediction: {e}")
+        st.error(f"Error generating league predictions: {e}")
 
 # App Layout with Tabs
 def app():
