@@ -29,9 +29,12 @@ def load_model():
 # Interactive Visualizations
 def plot_team_performance(team, data):
     team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
+    team_data['MatchDate'] = pd.to_datetime(team_data['Date'])
+    team_data = team_data.sort_values('MatchDate')
+
     plt.figure(figsize=(10, 5))
-    sns.lineplot(x='Date', y='FTHG', data=team_data[team_data['HomeTeam'] == team], label='Home Goals')
-    sns.lineplot(x='Date', y='FTAG', data=team_data[team_data['AwayTeam'] == team], label='Away Goals')
+    sns.lineplot(x='MatchDate', y='FTHG', data=team_data, label='Goals Scored')
+    sns.lineplot(x='MatchDate', y='FTAG', data=team_data, label='Goals Conceded')
     plt.title(f"Performance Over Time: {team}")
     plt.xlabel("Date")
     plt.ylabel("Goals")
@@ -40,9 +43,8 @@ def plot_team_performance(team, data):
 
 def plot_goal_distribution(team, data):
     team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
-    goals = []
-    goals.extend(team_data[team_data['HomeTeam'] == team]['FTHG'])
-    goals.extend(team_data[team_data['AwayTeam'] == team]['FTAG'])
+    goals = team_data['FTHG'][team_data['HomeTeam'] == team].sum() + team_data['FTAG'][team_data['AwayTeam'] == team].sum()
+
     plt.figure(figsize=(10, 5))
     sns.histplot(goals, bins=10, kde=True)
     plt.title(f"Goal Distribution for {team}")
@@ -67,6 +69,26 @@ def plot_head_to_head(team1, team2, data):
     plt.title(f"Head-to-Head: {team1} vs {team2}")
     st.pyplot(plt)
 
+def compare_teams(team1, team2, data):
+    team1_data = data[(data['HomeTeam'] == team1) | (data['AwayTeam'] == team1)]
+    team2_data = data[(data['HomeTeam'] == team2) | (data['AwayTeam'] == team2)]
+
+    metrics = {
+        'Total Matches': [len(team1_data), len(team2_data)],
+        'Total Goals Scored': [
+            team1_data['FTHG'][team1_data['HomeTeam'] == team1].sum() + team1_data['FTAG'][team1_data['AwayTeam'] == team1].sum(),
+            team2_data['FTHG'][team2_data['HomeTeam'] == team2].sum() + team2_data['FTAG'][team2_data['AwayTeam'] == team2].sum()
+        ],
+        'Total Goals Conceded': [
+            team1_data['FTAG'][team1_data['HomeTeam'] == team1].sum() + team1_data['FTHG'][team1_data['AwayTeam'] == team1].sum(),
+            team2_data['FTAG'][team2_data['HomeTeam'] == team2].sum() + team2_data['FTHG'][team2_data['AwayTeam'] == team2].sum()
+        ]
+    }
+
+    comparison_df = pd.DataFrame(metrics, index=[team1, team2])
+    st.subheader(f"Team Comparison: {team1} vs {team2}")
+    st.table(comparison_df)
+
 def app():
     st.title("AI-Powered Football Match Outcome Predictor")
     st.header("Interactive Analytics and Visualizations")
@@ -75,18 +97,12 @@ def app():
     combined_data, filtered_data = load_data()
     model = load_model()
 
-    # Show available columns
+    # Show dataset columns (for debugging purposes, can be removed)
    # st.write("Columns in the dataset:")
-   # st.write(combined_data.columns)
-
-    # Check if 'HomeTeam' and 'AwayTeam' exist or adjust
-    if 'HomeTeam' in combined_data.columns and 'AwayTeam' in combined_data.columns:
-        teams = pd.concat([combined_data['HomeTeam'], combined_data['AwayTeam']]).unique()
-    else:
-        st.error("The columns 'HomeTeam' and 'AwayTeam' do not exist in the dataset. Please check the dataset structure.")
-        return
+   # st.write(combined_data.columns.tolist())
 
     # Team Selection
+    teams = pd.concat([combined_data['HomeTeam'], combined_data['AwayTeam']]).unique()
     selected_team = st.selectbox("Select a Team", teams)
 
     st.subheader("Team Performance Over Time")
@@ -102,6 +118,9 @@ def app():
     team2 = st.selectbox("Select Opponent", [t for t in teams if t != selected_team])
     plot_head_to_head(selected_team, team2, combined_data)
 
+    st.subheader("Team Comparison")
+    compare_teams(selected_team, team2, combined_data)
+
     st.subheader("Predict Outcome")
     HomeGoalAvg = st.number_input("Average Goals by Home Team (Last 5 Matches):", min_value=0.0, step=0.1)
     AwayGoalAvg = st.number_input("Average Goals by Away Team (Last 5 Matches):", min_value=0.0, step=0.1)
@@ -116,6 +135,7 @@ def app():
 
 if __name__ == "__main__":
     app()
+
 
 
 
