@@ -209,7 +209,6 @@ def league_prediction(data):
         )
 
         # Dynamic Performance Insights: Total Clean Sheets
-      # Make sure the function is aligned at the top level
 def plot_clean_sheets_chart(data):
     try:
         clean_sheets = data.groupby("Team")["CleanSheets"].sum().sort_values(ascending=False)
