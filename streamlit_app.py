@@ -52,10 +52,7 @@ def set_background(image_file):
 def plot_goals_heatmap(data):
     try:
         goals_data = data.groupby(['HomeTeam', 'AwayTeam']).agg({'FTHG': 'sum', 'FTAG': 'sum'}).reset_index()
-        pivot_data = goals_data.pivot(index="HomeTeam", columns="AwayTeam", values="FTHG")
-        
-        # Replace NaN values with 0 for the heatmap
-        pivot_data = pivot_data.fillna(0)
+        pivot_data = goals_data.pivot(index="HomeTeam", columns="AwayTeam", values="FTHG").fillna(0)
 
         plt.figure(figsize=(10, 8))
         sns.heatmap(pivot_data, annot=True, fmt="g", cmap="coolwarm")
