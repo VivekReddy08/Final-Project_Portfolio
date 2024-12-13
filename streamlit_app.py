@@ -115,11 +115,15 @@ def plot_goal_distribution(data):
 def league_prediction(data):
     try:
         st.subheader("League Performance Prediction")
-        teams = pd.concat([data['HomeTeam'], data['AwayTeam']]).unique()
+        data['Season'] = pd.to_datetime(data['Date']).dt.year
+        latest_season = data['Season'].max()
+        season_data = data[data['Season'] == latest_season]
+
+        teams = pd.concat([season_data['HomeTeam'], season_data['AwayTeam']]).unique()
 
         prediction_results = {}
         for team in teams:
-            team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
+            team_data = season_data[(season_data['HomeTeam'] == team) | (season_data['AwayTeam'] == team)]
             avg_goals = team_data['FTHG'].mean() + team_data['FTAG'].mean()
             win_percentage = len(team_data[team_data['FTR'] == 'H']) / len(team_data)
             prediction_results[team] = {
@@ -136,8 +140,8 @@ def league_prediction(data):
 def match_winner_predictor(data):
     try:
         st.subheader("Match Winner Predictor")
-        team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique(), key="team1")
-        team2 = st.selectbox("Select Team 2", [t for t in data['AwayTeam'].unique() if t != team1], key="team2")
+        team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique(), key="match_team1")
+        team2 = st.selectbox("Select Team 2", [t for t in data['AwayTeam'].unique() if t != team1], key="match_team2")
 
         team1_data = data[data['HomeTeam'] == team1]
         team2_data = data[data['AwayTeam'] == team2]
