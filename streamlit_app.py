@@ -82,23 +82,6 @@ def plot_avg_goals_trend(data):
         logging.error(f"Error in plot_avg_goals_trend: {e}")
         st.error(f"Error generating average goals trend: {e}")
 
-def plot_possession_trend(team, data):
-    try:
-        team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
-        team_data['MatchDate'] = pd.to_datetime(team_data['Date'])
-        team_data.sort_values(by="MatchDate", inplace=True)
-
-        plt.figure(figsize=(10, 6))
-        sns.lineplot(x="MatchDate", y="PossessionHome", data=team_data, label="Home Possession")
-        sns.lineplot(x="MatchDate", y="PossessionAway", data=team_data, label="Away Possession")
-        plt.title(f"Possession Trends: {team}", color="white")
-        plt.xlabel("Date", color="white")
-        plt.ylabel("Possession (%)", color="white")
-        st.pyplot(plt)
-    except Exception as e:
-        logging.error(f"Error in plot_possession_trend: {e}")
-        st.error(f"Error generating possession trend: {e}")
-
 def plot_head_to_head_bar(team1, team2, data):
     try:
         h2h_data = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
@@ -150,6 +133,26 @@ def league_prediction(data):
         logging.error(f"Error in league_prediction: {e}")
         st.error(f"Error generating league predictions: {e}")
 
+def match_winner_predictor(data):
+    try:
+        st.subheader("Match Winner Predictor")
+        team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique())
+        team2 = st.selectbox("Select Team 2", [t for t in data['AwayTeam'].unique() if t != team1])
+
+        team1_data = data[data['HomeTeam'] == team1]
+        team2_data = data[data['AwayTeam'] == team2]
+
+        team1_avg_goals = team1_data['FTHG'].mean()
+        team2_avg_goals = team2_data['FTAG'].mean()
+
+        if team1_avg_goals > team2_avg_goals:
+            st.success(f"Predicted Winner: {team1}")
+        else:
+            st.success(f"Predicted Winner: {team2}")
+    except Exception as e:
+        logging.error(f"Error in match_winner_predictor: {e}")
+        st.error(f"Error predicting match winner: {e}")
+
 # App Layout with Tabs
 def app():
     # Load Images
@@ -173,7 +176,7 @@ def app():
     with tab2:
         st.header("Team Performance")
         selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique())
-        plot_possession_trend(selected_team, combined_data)
+        plot_goal_distribution(combined_data)
 
     with tab3:
         st.header("Head-to-Head")
@@ -184,6 +187,7 @@ def app():
     with tab4:
         st.header("Match Prediction")
         league_prediction(combined_data)
+        match_winner_predictor(combined_data)
 
 if __name__ == "__main__":
     app()
