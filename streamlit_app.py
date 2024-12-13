@@ -212,6 +212,17 @@ def match_winner_predictor(data):
         team2_win_prob = (team2_wins / total_matches) * 100 if total_matches > 0 else 0
         draw_prob = (draws / total_matches) * 100 if total_matches > 0 else 0
 
+        # Possession prediction
+        team1_avg_possession = team1_home['PossessionHome'].mean() if 'PossessionHome' in team1_home else None
+        team2_avg_possession = team2_away['PossessionAway'].mean() if 'PossessionAway' in team2_away else None
+
+        # Over/Under Prediction
+        combined_avg_goals = team1_avg_goals + team2_avg_goals
+        over_under_2_5 = "Over" if combined_avg_goals > 2.5 else "Under"
+
+        # Goal margin prediction
+        predicted_goal_margin = abs(team1_avg_goals - team2_avg_goals)
+
         # Display Insights
         st.write(f"**{team1} Avg Goals (Home):** {team1_avg_goals:.2f}")
         st.write(f"**{team2} Avg Goals (Away):** {team2_avg_goals:.2f}")
@@ -219,6 +230,11 @@ def match_winner_predictor(data):
         st.write(f"**{team1} Win %:** {team1_win_prob:.2f}%")
         st.write(f"**{team2} Win %:** {team2_win_prob:.2f}%")
         st.write(f"**Draw %:** {draw_prob:.2f}%")
+        if team1_avg_possession and team2_avg_possession:
+            st.write(f"**{team1} Possession Avg (Home):** {team1_avg_possession:.2f}%")
+            st.write(f"**{team2} Possession Avg (Away):** {team2_avg_possession:.2f}%")
+        st.write(f"**Over/Under 2.5 Goals:** {over_under_2_5}")
+        st.write(f"**Predicted Goal Margin:** {predicted_goal_margin:.2f}")
 
         # Predict Winner
         if team1_avg_goals > team2_avg_goals:
@@ -230,6 +246,7 @@ def match_winner_predictor(data):
     except Exception as e:
         logging.error(f"Error in match_winner_predictor: {e}")
         st.error(f"Error predicting match winner: {e}")
+
 
 
 # App Layout with Tabs
