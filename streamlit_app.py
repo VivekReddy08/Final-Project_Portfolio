@@ -112,6 +112,8 @@ def plot_goal_distribution(data):
 def league_prediction(data):
     try:
         st.subheader("League Performance Prediction")
+        
+        # Add a 'Season' column to filter the latest season
         data['Season'] = pd.to_datetime(data['Date']).dt.year
         latest_season = data['Season'].max()
         season_data = data[data['Season'] == latest_season]
@@ -121,12 +123,42 @@ def league_prediction(data):
         prediction_results = {}
         for team in teams:
             team_data = season_data[(season_data['HomeTeam'] == team) | (season_data['AwayTeam'] == team)]
-            avg_goals = team_data['FTHG'].mean() + team_data['FTAG'].mean()
-            win_percentage = len(team_data[team_data['FTR'] == 'H']) / len(team_data)
+            
+            # Compute stats
+            total_matches = len(team_data)
+            total_goals_scored = team_data.loc[team_data['HomeTeam'] == team, 'FTHG'].sum() + \
+                                 team_data.loc[team_data['AwayTeam'] == team, 'FTAG'].sum()
+            total_goals_conceded = team_data.loc[team_data['HomeTeam'] == team, 'FTAG'].sum() + \
+                                   team_data.loc[team_data['AwayTeam'] == team, 'FTHG'].sum()
+            
+            win_count = len(team_data[((team_data['HomeTeam'] == team) & (team_data['FTR'] == 'H')) |
+                                       ((team_data['AwayTeam'] == team) & (team_data['FTR'] == 'A'))])
+            draw_count = len(team_data[team_data['FTR'] == 'D'])
+            loss_count = total_matches - win_count - draw_count
+            
+            # Compute averages
+            avg_goals_scored = total_goals_scored / total_matches
+            avg_goals_conceded = total_goals_conceded / total_matches
+            win_rate = (win_count / total_matches) * 100
+            draw_rate = (draw_count / total_matches) * 100
+            loss_rate = (loss_count / total_matches) * 100
+
+            # Store in dictionary
             prediction_results[team] = {
-                'Avg Goals': avg_goals,
-                'Win %': win_percentage * 100
+                'Avg Goals Scored': round(avg_goals_scored, 2),
+                'Avg Goals Conceded': round(avg_goals_conceded, 2),
+                'Win Rate (%)': round(win_rate, 2),
+                'Draw Rate (%)': round(draw_rate, 2),
+                'Loss Rate (%)': round(loss_rate, 2)
             }
+
+        # Convert dictionary to DataFrame
+        prediction_df = pd.DataFrame(prediction_results).T
+        st.dataframe(prediction_df.style.highlight_max(axis=0, color="lightgreen"))
+    except Exception as e:
+        logging.error(f"Error in league_prediction: {e}")
+        st.error(f"Error generating league predictions: {e}")
+
 
         prediction_df = pd.DataFrame(prediction_results).T
         st.dataframe(prediction_df.style.highlight_max(axis=0, color="lightgreen"))
