@@ -115,10 +115,7 @@ def match_prediction():
 
 # Main Application
 def app(data):
-    pl_logo = get_base64("pl_logo.jpg")
-    salah_image = get_base64("mo_salah.jpg")
-    torres_image = get_base64("steve_torres.jpg")
-
+    pl_logo = get_base64("pl_logo.jpg")  # Consistent background
     set_background(pl_logo)
 
     st.title("AI-Powered Football Match Outcome Predictor")
@@ -129,17 +126,14 @@ def app(data):
 
     with tab2:
         team = st.selectbox("Select a Team", data['HomeTeam'].unique())
-        set_background(salah_image)
         team_performance(data, team)
 
     with tab3:
-        set_background(pl_logo)
         team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique(), key="team1")
         team2 = st.selectbox("Select Team 2", [t for t in data['HomeTeam'].unique() if t != team1], key="team2")
-        # Add Head-to-Head Comparison Logic Here
+        st.write(f"Comparison feature coming soon!")  # Placeholder for head-to-head
 
     with tab4:
-        set_background(torres_image)
         match_prediction()
 
 if __name__ == "__main__":
