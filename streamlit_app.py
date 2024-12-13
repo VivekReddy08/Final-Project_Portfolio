@@ -114,6 +114,21 @@ def plot_head_to_head_bar(team1, team2, data):
         logging.error(f"Error in plot_head_to_head_bar: {e}")
         st.error(f"Error generating head-to-head bar chart: {e}")
 
+def plot_goal_distribution(data):
+    try:
+        team_goals = data.groupby("HomeTeam")["FTHG"].sum() + data.groupby("AwayTeam")["FTAG"].sum()
+        team_goals = team_goals.sort_values(ascending=False)
+
+        plt.figure(figsize=(10, 6))
+        team_goals.plot(kind="bar", color="orange")
+        plt.title("Distribution of Goals by Teams", color="white")
+        plt.xlabel("Teams", color="white")
+        plt.ylabel("Total Goals", color="white")
+        st.pyplot(plt)
+    except Exception as e:
+        logging.error(f"Error in plot_goal_distribution: {e}")
+        st.error(f"Error generating goal distribution: {e}")
+
 def league_prediction(data):
     try:
         st.subheader("League Performance Prediction")
@@ -153,6 +168,7 @@ def app():
         st.header("League Overview")
         plot_goals_heatmap(combined_data)
         plot_avg_goals_trend(combined_data)
+        plot_goal_distribution(combined_data)
 
     with tab2:
         st.header("Team Performance")
