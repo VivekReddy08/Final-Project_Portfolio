@@ -43,10 +43,16 @@ def plot_team_performance(team, data):
 
 def plot_goal_distribution(team, data):
     team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
-    goals = team_data['FTHG'][team_data['HomeTeam'] == team].sum() + team_data['FTAG'][team_data['AwayTeam'] == team].sum()
+    home_goals = team_data['FTHG'][team_data['HomeTeam'] == team]
+    away_goals = team_data['FTAG'][team_data['AwayTeam'] == team]
+    goals = pd.concat([home_goals, away_goals])
+
+    if goals.empty:
+        st.write(f"No goal data available for {team}.")
+        return
 
     plt.figure(figsize=(10, 5))
-    sns.histplot(goals, bins=10, kde=True)
+    sns.histplot(goals, bins=10, kde=True, color='blue')
     plt.title(f"Goal Distribution for {team}")
     plt.xlabel("Goals")
     plt.ylabel("Frequency")
@@ -97,10 +103,6 @@ def app():
     combined_data, filtered_data = load_data()
     model = load_model()
 
-    # Show dataset columns (for debugging purposes, can be removed)
-   # st.write("Columns in the dataset:")
-   # st.write(combined_data.columns.tolist())
-
     # Team Selection
     teams = pd.concat([combined_data['HomeTeam'], combined_data['AwayTeam']]).unique()
     selected_team = st.selectbox("Select a Team", teams)
@@ -135,6 +137,7 @@ def app():
 
 if __name__ == "__main__":
     app()
+
 
 
 
