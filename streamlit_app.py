@@ -19,6 +19,12 @@ def set_background(image_file):
             background-size: cover;
             color: white;
         }}
+        .gradient-box {{
+            background: linear-gradient(135deg, rgba(255,0,150,0.3), rgba(0,204,255,0.3));
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+        }}
         table {{
             color: white !important;
         }}
@@ -44,7 +50,9 @@ def league_overview(data):
     st.subheader("Top Scoring Matches")
     data['TotalGoals'] = data['FTHG'] + data['FTAG']
     top_matches = data.nlargest(10, 'TotalGoals')[['Date', 'HomeTeam', 'AwayTeam', 'TotalGoals']]
+    st.markdown('<div class="gradient-box">', unsafe_allow_html=True)
     st.table(top_matches)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # Goals Scored Per Team
     st.subheader("Total Goals Scored Per Team")
@@ -111,7 +119,9 @@ def match_prediction():
 
     if st.button("Predict Outcome"):
         prediction = np.random.choice(["Home Win", "Draw", "Away Win"])  # Placeholder prediction logic
+        st.markdown('<div class="gradient-box">', unsafe_allow_html=True)
         st.write(f"Predicted Outcome: **{prediction}**")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # Main Application
 def app(data):
