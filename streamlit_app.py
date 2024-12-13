@@ -3,11 +3,37 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import base64
 
 # Helper Functions
+def get_base64(file_path):
+    with open(file_path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+def set_background(image_file):
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background: url(data:image/png;base64,{image_file});
+            background-size: cover;
+            color: white;
+        }}
+        .stMarkdown h1, h2, h3, h4, h5, h6 {{
+            color: white;
+        }}
+        .stMarkdown p {{
+            color: white;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Visualization Functions
 def league_overview(data):
     st.header("League Overview")
-
+    
     st.subheader("Total Goals Scored Per Team")
     goals_per_team = data.groupby('HomeTeam')['FTHG'].sum() + data.groupby('AwayTeam')['FTAG'].sum()
     goals_per_team.sort_values(ascending=False, inplace=True)
@@ -116,6 +142,10 @@ def match_prediction():
 
 # Main Application
 def app(data):
+    # Add background
+    background_image = get_base64("pl_logo.jpg")  # Replace with your background image
+    set_background(background_image)
+
     st.title("AI-Powered Football Match Outcome Predictor")
     tab1, tab2, tab3, tab4 = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
 
