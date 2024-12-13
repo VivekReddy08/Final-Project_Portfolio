@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import base64
 
-# Helper Functions
+# Helper Function: Load Base64 Encoded Image
 def get_base64(file_path):
     with open(file_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
+# Set Background Image
 def set_background(image_file):
     st.markdown(
         f"""
@@ -20,16 +21,9 @@ def set_background(image_file):
             color: white;
         }}
         .gradient-box {{
-            background: linear-gradient(135deg, rgba(255,0,150,0.3), rgba(0,204,255,0.3));
-            padding: 15px;
+            background: linear-gradient(to bottom right, rgba(0,0,0,0.8), rgba(0,0,0,0.5));
+            padding: 10px;
             border-radius: 10px;
-            color: white;
-        }}
-        table {{
-            color: white !important;
-        }}
-        th, td {{
-            color: white !important;
         }}
         .stMarkdown h1, h2, h3, h4, h5, h6 {{
             color: white;
@@ -42,90 +36,106 @@ def set_background(image_file):
         unsafe_allow_html=True
     )
 
-# Visualization Functions
+# League Overview
 def league_overview(data):
     st.header("League Overview")
-    
-    # Top Scoring Matches
     st.subheader("Top Scoring Matches")
-    data['TotalGoals'] = data['FTHG'] + data['FTAG']
-    top_matches = data.nlargest(10, 'TotalGoals')[['Date', 'HomeTeam', 'AwayTeam', 'TotalGoals']]
+    
+    top_matches = data[['Date', 'HomeTeam', 'AwayTeam', 'FTHG', 'FTAG']]
+    top_matches['TotalGoals'] = top_matches['FTHG'] + top_matches['FTAG']
+    top_matches = top_matches.sort_values(by='TotalGoals', ascending=False).head(10)
+
     st.markdown('<div class="gradient-box">', unsafe_allow_html=True)
-    st.table(top_matches)
+    st.table(top_matches[['Date', 'HomeTeam', 'AwayTeam', 'TotalGoals']])
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Goals Scored Per Team
-    st.subheader("Total Goals Scored Per Team")
-    goals_per_team = data.groupby('HomeTeam')['FTHG'].sum() + data.groupby('AwayTeam')['FTAG'].sum()
-    goals_per_team.sort_values(ascending=False, inplace=True)
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(x=goals_per_team.index, y=goals_per_team.values, ax=ax, palette="coolwarm")
-    ax.set_xticklabels(goals_per_team.index, rotation=45)
-    ax.set_title("Goals Scored by Teams", fontsize=14, color="white")
-    ax.set_ylabel("Total Goals", fontsize=12, color="white")
+    # Visualization: Goals Scored by Teams
+    st.subheader("Goals Scored by Teams")
+    team_goals = data.groupby('HomeTeam')[['FTHG']].sum().reset_index()
+    team_goals.columns = ['Team', 'GoalsScored']
+    team_goals = team_goals.sort_values(by='GoalsScored', ascending=False)
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.barplot(x='Team', y='GoalsScored', data=team_goals, ax=ax, palette='coolwarm')
+    ax.set_title("Total Goals Scored by Teams", fontsize=16, color="white")
     ax.set_xlabel("Teams", fontsize=12, color="white")
+    ax.set_ylabel("Goals Scored", fontsize=12, color="white")
+    ax.tick_params(colors='white')
+    plt.xticks(rotation=90)
     st.pyplot(fig)
 
-    # Match Outcome Distribution
-    st.subheader("Win/Draw/Loss Distribution (League-wide)")
-    outcome_distribution = data['FTR'].value_counts()
-    fig, ax = plt.subplots()
-    outcome_distribution.plot.pie(
-        autopct='%1.1f%%', startangle=90, ax=ax, colors=['#4CAF50', '#FFC107', '#F44336']
-    )
-    ax.set_ylabel('')
-    ax.set_title("League-Wide Match Outcomes", fontsize=14, color="white")
-    st.pyplot(fig)
-
+# Team Performance
 def team_performance(data, team):
-    st.header(f"Performance: {team}")
+    st.header(f"Performance of {team}")
+    team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
 
     # Goals Over Time
-    st.subheader("Goals Scored vs. Goals Conceded Over Time")
-    team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
     team_data['MatchDate'] = pd.to_datetime(team_data['Date'])
     team_data = team_data.sort_values('MatchDate')
 
     fig, ax = plt.subplots(figsize=(10, 5))
-    sns.lineplot(
-        x='MatchDate', y='FTHG', data=team_data, label='Goals Scored', ax=ax, color="cyan"
-    )
-    sns.lineplot(
-        x='MatchDate', y='FTAG', data=team_data, label='Goals Conceded', ax=ax, color="orange"
-    )
-    ax.set_title("Performance Over Time", fontsize=14, color="white")
+    sns.lineplot(x='MatchDate', y='FTHG', data=team_data[team_data['HomeTeam'] == team], label='Goals Scored', ax=ax, color='blue')
+    sns.lineplot(x='MatchDate', y='FTAG', data=team_data[team_data['AwayTeam'] == team], label='Goals Conceded', ax=ax, color='red')
+    ax.set_title(f"Goals Over Time for {team}", fontsize=14, color="white")
     ax.set_ylabel("Goals", fontsize=12, color="white")
     ax.set_xlabel("Match Date", fontsize=12, color="white")
+    ax.tick_params(colors='white')
     st.pyplot(fig)
 
-    # Match Outcomes
-    st.subheader("Match Outcomes")
-    outcomes = team_data['FTR'].value_counts()
-    fig, ax = plt.subplots(figsize=(5, 5))
-    outcomes.plot.pie(
-        autopct='%1.1f%%', startangle=90, ax=ax, colors=['#4CAF50', '#FFC107', '#F44336']
-    )
-    ax.set_ylabel('')
-    ax.set_title("Match Outcomes", fontsize=14, color="white")
-    st.pyplot(fig)
+# Head-to-Head Comparison
+def head_to_head_comparison(data, team1, team2):
+    st.header(f"Head-to-Head: {team1} vs {team2}")
 
-def match_prediction():
-    st.header("Match Prediction")
-    st.write("Provide inputs for match prediction.")
-    HomeGoalAvg = st.number_input("Avg Goals Home Team (Last 5 Matches):", min_value=0.0, step=0.1)
-    AwayGoalAvg = st.number_input("Avg Goals Away Team (Last 5 Matches):", min_value=0.0, step=0.1)
-    HomeWinRate = st.number_input("Home Win Rate:", min_value=0.0, max_value=1.0, step=0.01)
-    AwayWinRate = st.number_input("Away Win Rate:", min_value=0.0, max_value=1.0, step=0.01)
+    # Filter data for head-to-head matches
+    h2h_data = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
+                    ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
 
-    if st.button("Predict Outcome"):
-        prediction = np.random.choice(["Home Win", "Draw", "Away Win"])  # Placeholder prediction logic
+    if h2h_data.empty:
         st.markdown('<div class="gradient-box">', unsafe_allow_html=True)
-        st.write(f"Predicted Outcome: **{prediction}**")
+        st.write(f"No matches found between **{team1}** and **{team2}**.")
+        st.markdown('</div>', unsafe_allow_html=True)
+    else:
+        # Display statistics table
+        st.subheader("Head-to-Head Statistics")
+        total_matches = len(h2h_data)
+        team1_wins = len(h2h_data[(h2h_data['HomeTeam'] == team1) & (h2h_data['FTR'] == 'H')]) + \
+                     len(h2h_data[(h2h_data['AwayTeam'] == team1) & (h2h_data['FTR'] == 'A')])
+        team2_wins = len(h2h_data[(h2h_data['HomeTeam'] == team2) & (h2h_data['FTR'] == 'H')]) + \
+                     len(h2h_data[(h2h_data['AwayTeam'] == team2) & (h2h_data['FTR'] == 'A')])
+        draws = len(h2h_data[h2h_data['FTR'] == 'D'])
+
+        stats = {
+            "Total Matches": total_matches,
+            f"Wins by {team1}": team1_wins,
+            f"Wins by {team2}": team2_wins,
+            "Draws": draws,
+            f"Total Goals by {team1}": h2h_data[h2h_data['HomeTeam'] == team1]['FTHG'].sum() + h2h_data[h2h_data['AwayTeam'] == team1]['FTAG'].sum(),
+            f"Total Goals by {team2}": h2h_data[h2h_data['HomeTeam'] == team2]['FTHG'].sum() + h2h_data[h2h_data['AwayTeam'] == team2]['FTAG'].sum()
+        }
+        stats_df = pd.DataFrame(stats.items(), columns=["Metric", "Value"])
+        st.markdown('<div class="gradient-box">', unsafe_allow_html=True)
+        st.table(stats_df)
         st.markdown('</div>', unsafe_allow_html=True)
 
-# Main Application
+        # Display outcome pie chart
+        st.subheader("Match Outcomes")
+        outcomes = h2h_data['FTR'].value_counts()
+        fig, ax = plt.subplots(figsize=(5, 5))
+        outcomes.plot.pie(
+            autopct='%1.1f%%', startangle=90, ax=ax, colors=['#4CAF50', '#FFC107', '#F44336']
+        )
+        ax.set_ylabel('')
+        ax.set_title("Head-to-Head Outcomes", fontsize=14, color="white")
+        st.pyplot(fig)
+
+# Match Prediction Placeholder
+def match_prediction():
+    st.header("Match Prediction")
+    st.write("Feature coming soon!")
+
+# Main App
 def app(data):
-    pl_logo = get_base64("pl_logo.jpg")  # Consistent background
+    pl_logo = get_base64("pl_logo.jpg")
     set_background(pl_logo)
 
     st.title("AI-Powered Football Match Outcome Predictor")
@@ -141,7 +151,7 @@ def app(data):
     with tab3:
         team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique(), key="team1")
         team2 = st.selectbox("Select Team 2", [t for t in data['HomeTeam'].unique() if t != team1], key="team2")
-        st.write(f"Comparison feature coming soon!")  # Placeholder for head-to-head
+        head_to_head_comparison(data, team1, team2)
 
     with tab4:
         match_prediction()
