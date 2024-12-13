@@ -209,24 +209,24 @@ def league_prediction(data):
         )
 
         # Dynamic Performance Insights: Total Clean Sheets
-        def plot_clean_sheets_chart(data):
-    try:
-        # Extract clean sheets data
-        clean_sheet_data = data['Clean Sheets'].sort_values(ascending=False)
+      def plot_clean_sheets_chart(data):
+           try:  # Start a try block with proper indentation
+        clean_sheets = data.groupby("Team")["CleanSheets"].sum().sort_values(ascending=False)
 
-        # Plotting
-        plt.figure(figsize=(10, 6))
-        clean_sheet_data.plot(kind="bar", color="skyblue", edgecolor="black")
+        # Create the plot
+        plt.figure(figsize=(12, 6))
+        clean_sheets.plot(kind="bar", color="skyblue")
         plt.title("Performance Insights: Total Clean Sheets", fontsize=16, color="white")
         plt.xlabel("Teams", fontsize=12, color="white")
-        plt.ylabel("Clean Sheets", fontsize=12, color="white")
-        plt.xticks(rotation=45, fontsize=10, color="white", ha='right')  # Rotate for better readability
+        plt.ylabel("Total Clean Sheets", fontsize=12, color="white")
+        plt.xticks(rotation=45, fontsize=10, color="white")
         plt.yticks(fontsize=10, color="white")
-        plt.grid(axis='y', linestyle='--', alpha=0.6)  # Add gridlines for y-axis
+        plt.tight_layout()
         st.pyplot(plt)
     except Exception as e:
-        logging.error(f"Error in plot_clean_sheets_chart: {e}")
+        logging.error(f"Error generating clean sheets chart: {e}")
         st.error(f"Error generating clean sheets chart: {e}")
+
 
 def match_winner_predictor(data):
     try:
