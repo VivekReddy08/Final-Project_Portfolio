@@ -116,31 +116,40 @@ def league_prediction(data):
         # Load and encode the Steve Torres image
         torres_image = get_base64("steve_torres.jpg")  # Ensure the correct path to the image
 
-        # Add a style block for the table with the background
+        # Style block for the table with the background image
         st.markdown(
             f"""
             <style>
             .torres-background {{
                 background: url(data:image/png;base64,{torres_image});
-                background-size: cover;
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: center;
                 color: white;
                 font-weight: bold;
                 padding: 10px;
                 border-radius: 10px;
+                margin-top: 10px;
+                opacity: 0.9;
             }}
             table {{
                 color: white;
-                background: rgba(0, 0, 0, 0.7);
+                background: rgba(0, 0, 0, 0.8);
+                text-align: center;
             }}
             th {{
                 color: lightgreen;
+                font-size: 14px;
+            }}
+            td {{
+                color: white;
             }}
             </style>
             """,
             unsafe_allow_html=True
         )
 
-        # Add a 'Season' column to filter the latest season
+        # Add a 'Season' column and filter for the latest season
         data['Season'] = pd.to_datetime(data['Date']).dt.year
         latest_season = data['Season'].max()
         season_data = data[data['Season'] == latest_season]
@@ -150,19 +159,24 @@ def league_prediction(data):
         prediction_results = {}
         for team in teams:
             team_data = season_data[(season_data['HomeTeam'] == team) | (season_data['AwayTeam'] == team)]
-            
+
             # Compute stats
             total_matches = len(team_data)
             total_goals_scored = team_data.loc[team_data['HomeTeam'] == team, 'FTHG'].sum() + \
                                  team_data.loc[team_data['AwayTeam'] == team, 'FTAG'].sum()
             total_goals_conceded = team_data.loc[team_data['HomeTeam'] == team, 'FTAG'].sum() + \
                                    team_data.loc[team_data['AwayTeam'] == team, 'FTHG'].sum()
-            
+
             win_count = len(team_data[((team_data['HomeTeam'] == team) & (team_data['FTR'] == 'H')) |
                                        ((team_data['AwayTeam'] == team) & (team_data['FTR'] == 'A'))])
             draw_count = len(team_data[team_data['FTR'] == 'D'])
             loss_count = total_matches - win_count - draw_count
-            
+
+            # Additional insights
+            goal_conversion_rate = (total_goals_scored / total_matches) * 100
+            clean_sheets = len(team_data[(team_data['HomeTeam'] == team) & (team_data['FTAG'] == 0)]) + \
+                           len(team_data[(team_data['AwayTeam'] == team) & (team_data['FTHG'] == 0)])
+
             # Compute averages
             avg_goals_scored = total_goals_scored / total_matches
             avg_goals_conceded = total_goals_conceded / total_matches
@@ -176,12 +190,14 @@ def league_prediction(data):
                 'Avg Goals Conceded': round(avg_goals_conceded, 2),
                 'Win Rate (%)': round(win_rate, 2),
                 'Draw Rate (%)': round(draw_rate, 2),
-                'Loss Rate (%)': round(loss_rate, 2)
+                'Loss Rate (%)': round(loss_rate, 2),
+                'Goal Conversion Rate (%)': round(goal_conversion_rate, 2),
+                'Clean Sheets': clean_sheets
             }
 
         # Convert dictionary to DataFrame
         prediction_df = pd.DataFrame(prediction_results).T
-        
+
         # Render the table with background styling
         st.markdown(
             f"""
@@ -192,36 +208,22 @@ def league_prediction(data):
             unsafe_allow_html=True
         )
 
-        # Plotting dynamic graphs for performance insights
-        st.subheader("Performance Insights")
-        team_performance = prediction_df.sort_values(by="Win Rate (%)", ascending=False)
+        # Dynamic Performance Insights: Total Clean Sheets
+        st.subheader("Performance Insights: Total Clean Sheets")
+        clean_sheet_data = prediction_df['Clean Sheets'].sort_values(ascending=False)
         plt.figure(figsize=(10, 6))
-        plt.bar(team_performance.index, team_performance["Win Rate (%)"], color="dodgerblue")
-        plt.title("Win Rate by Teams", color="white")
+        clean_sheet_data.plot(kind="bar", color="skyblue")
+        plt.title("Clean Sheets by Teams", color="white")
         plt.xlabel("Teams", color="white")
-        plt.ylabel("Win Rate (%)", color="white")
+        plt.ylabel("Clean Sheets", color="white")
         plt.xticks(rotation=45, color="white")
         plt.yticks(color="white")
         st.pyplot(plt)
 
-        # Interactive team-specific win probability
-        st.subheader("Team-Specific Win Probability")
-        selected_team = st.selectbox("Select a Team", team_performance.index)
-        team_data = prediction_df.loc[selected_team]
-        fig, ax = plt.subplots(figsize=(6, 6))
-        ax.pie(
-            [team_data["Win Rate (%)"], team_data["Draw Rate (%)"], team_data["Loss Rate (%)"]],
-            labels=["Win", "Draw", "Loss"],
-            autopct="%1.1f%%",
-            startangle=90,
-            colors=["green", "yellow", "red"],
-        )
-        ax.set_title(f"Win Probability for {selected_team}", color="white")
-        st.pyplot(fig)
-
     except Exception as e:
         logging.error(f"Error in league_prediction: {e}")
         st.error(f"Error generating league predictions: {e}")
+
 def match_winner_predictor(data):
     try:
         st.subheader("Match Winner Predictor")
