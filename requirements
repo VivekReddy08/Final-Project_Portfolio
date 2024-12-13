@@ -1,5 +1,3 @@
-streamlit==1.28.1
-scikit-learn
-joblib
+streamlit
 numpy
-pandas
+joblib
