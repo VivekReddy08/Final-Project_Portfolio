@@ -116,10 +116,10 @@ def league_overview(data):
     avg_goals_per_match = total_goals / total_matches
     most_wins = data['FTR'].value_counts().idxmax()
 
-    st.write("*Total Matches Played:*", total_matches)
-    st.write("*Total Goals Scored:*", total_goals)
-    st.write("*Average Goals per Match:*", round(avg_goals_per_match, 2))
-    st.write("*Most Common Match Outcome:*", most_wins)
+    st.write("**Total Matches Played:**", total_matches)
+    st.write("**Total Goals Scored:**", total_goals)
+    st.write("**Average Goals per Match:**", round(avg_goals_per_match, 2))
+    st.write("**Most Common Match Outcome:**", most_wins)
 
     # Visualization of goals per team
     goals_per_team = data.groupby('HomeTeam')[['FTHG', 'FTAG']].sum()
@@ -180,7 +180,7 @@ def app():
         input_data = np.array([[HomeGoalAvg, AwayGoalAvg, HomeWinRate, AwayWinRate]])
         prediction = model.predict(input_data)[0]
         outcome_map = {0: "Home Win", 1: "Draw", 2: "Away Win"}
-        st.write(f"The predicted outcome is: *{outcome_map[prediction]}*")
+        st.write(f"The predicted outcome is: **{outcome_map[prediction]}**")
 
-if _name_ == "_main_":
-    app()
+if __name__ == "__main__":
+app()
