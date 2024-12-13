@@ -224,9 +224,11 @@ def plot_clean_sheets_chart(data):
         plt.yticks(fontsize=10, color="white")
         plt.tight_layout()
         st.pyplot(plt)
+
     except Exception as e:
         logging.error(f"Error generating clean sheets chart: {e}")
         st.error(f"Error generating clean sheets chart: {e}")
+
 def match_winner_predictor(data):
     try:
         st.subheader("Match Winner Predictor")
