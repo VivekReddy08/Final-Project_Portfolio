@@ -53,8 +53,9 @@ def league_overview(data):
     fig, ax = plt.subplots(figsize=(10, 6))
     sns.barplot(x=goals_per_team.index, y=goals_per_team.values, ax=ax, palette="coolwarm")
     ax.set_xticklabels(goals_per_team.index, rotation=45)
-    ax.set_title("Goals Scored by Teams")
-    ax.set_ylabel("Total Goals")
+    ax.set_title("Goals Scored by Teams", fontsize=14, color="white")
+    ax.set_ylabel("Total Goals", fontsize=12, color="white")
+    ax.set_xlabel("Teams", fontsize=12, color="white")
     st.pyplot(fig)
 
     # Match Outcome Distribution
@@ -65,11 +66,10 @@ def league_overview(data):
         autopct='%1.1f%%', startangle=90, ax=ax, colors=['#4CAF50', '#FFC107', '#F44336']
     )
     ax.set_ylabel('')
-    ax.set_title("League-Wide Match Outcomes")
+    ax.set_title("League-Wide Match Outcomes", fontsize=14, color="white")
     st.pyplot(fig)
 
-def team_performance(data, team, image_file):
-    set_background(image_file)
+def team_performance(data, team):
     st.header(f"Performance: {team}")
 
     # Goals Over Time
@@ -80,13 +80,14 @@ def team_performance(data, team, image_file):
 
     fig, ax = plt.subplots(figsize=(10, 5))
     sns.lineplot(
-        x='MatchDate', y='FTHG', data=team_data, label='Goals Scored', ax=ax
+        x='MatchDate', y='FTHG', data=team_data, label='Goals Scored', ax=ax, color="cyan"
     )
     sns.lineplot(
-        x='MatchDate', y='FTAG', data=team_data, label='Goals Conceded', ax=ax
+        x='MatchDate', y='FTAG', data=team_data, label='Goals Conceded', ax=ax, color="orange"
     )
-    ax.set_title("Performance Over Time")
-    ax.set_ylabel("Goals")
+    ax.set_title("Performance Over Time", fontsize=14, color="white")
+    ax.set_ylabel("Goals", fontsize=12, color="white")
+    ax.set_xlabel("Match Date", fontsize=12, color="white")
     st.pyplot(fig)
 
     # Match Outcomes
@@ -97,7 +98,7 @@ def team_performance(data, team, image_file):
         autopct='%1.1f%%', startangle=90, ax=ax, colors=['#4CAF50', '#FFC107', '#F44336']
     )
     ax.set_ylabel('')
-    ax.set_title("Match Outcomes")
+    ax.set_title("Match Outcomes", fontsize=14, color="white")
     st.pyplot(fig)
 
 def match_prediction():
@@ -114,11 +115,11 @@ def match_prediction():
 
 # Main Application
 def app(data):
+    pl_logo = get_base64("pl_logo.jpg")
     salah_image = get_base64("mo_salah.jpg")
     torres_image = get_base64("steve_torres.jpg")
-    background_image = get_base64("pl_logo.jpg")
 
-    set_background(background_image)
+    set_background(pl_logo)
 
     st.title("AI-Powered Football Match Outcome Predictor")
     tab1, tab2, tab3, tab4 = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
@@ -128,12 +129,14 @@ def app(data):
 
     with tab2:
         team = st.selectbox("Select a Team", data['HomeTeam'].unique())
-        team_performance(data, team, salah_image)
+        set_background(salah_image)
+        team_performance(data, team)
 
     with tab3:
+        set_background(pl_logo)
         team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique(), key="team1")
         team2 = st.selectbox("Select Team 2", [t for t in data['HomeTeam'].unique() if t != team1], key="team2")
-        head_to_head(data, team1, team2)
+        # Add Head-to-Head Comparison Logic Here
 
     with tab4:
         set_background(torres_image)
