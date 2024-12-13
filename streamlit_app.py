@@ -76,8 +76,8 @@ def app():
     model = load_model()
 
     # Show available columns
-    st.write("Columns in the dataset:")
-    st.write(combined_data.columns)
+   # st.write("Columns in the dataset:")
+   # st.write(combined_data.columns)
 
     # Check if 'HomeTeam' and 'AwayTeam' exist or adjust
     if 'HomeTeam' in combined_data.columns and 'AwayTeam' in combined_data.columns:
