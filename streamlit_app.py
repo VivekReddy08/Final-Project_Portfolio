@@ -8,8 +8,8 @@ Original file is located at
 """
 
 import streamlit as st
-import numpy as np
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import joblib
 import os
@@ -22,29 +22,52 @@ if not os.path.exists(model_path):
 
 ensemble_model = joblib.load(model_path)
 
+# Load data for statistics (ensure these files are uploaded to your repo)
+combined_data_path = "combined_data.csv"  # Replace with your actual file path
+if not os.path.exists(combined_data_path):
+    st.error("Combined data file not found. Please ensure 'combined_data.csv' is available in the repository.")
+    st.stop()
+
+combined_data = pd.read_csv(combined_data_path)
+
 # Streamlit app with enhanced UI
 def main():
     st.set_page_config(page_title="Football Outcome Predictor", layout="wide")
     st.title("⚽ AI-Powered Football Match Outcome Predictor")
-    st.sidebar.title("Prediction Settings")
+    
+    st.sidebar.title("Team and Match Insights")
+    team_selected = st.sidebar.selectbox("Select a Team for Insights", sorted(combined_data['HomeTeam'].unique()))
 
-    # Layout with columns
+    # Display team stats
+    st.sidebar.header(f"{team_selected} - Statistics")
+    team_data = combined_data[(combined_data['HomeTeam'] == team_selected) | (combined_data['AwayTeam'] == team_selected)]
+    goals_scored = team_data[team_data['HomeTeam'] == team_selected]['FTHG'].sum() + team_data[team_data['AwayTeam'] == team_selected]['FTAG'].sum()
+    goals_conceded = team_data[team_data['HomeTeam'] == team_selected]['FTAG'].sum() + team_data[team_data['AwayTeam'] == team_selected]['FTHG'].sum()
+    matches_played = len(team_data)
+    possession_avg = team_data['Possession'].mean() if 'Possession' in team_data.columns else "N/A"
+
+    st.sidebar.write(f"Matches Played: {matches_played}")
+    st.sidebar.write(f"Goals Scored: {goals_scored}")
+    st.sidebar.write(f"Goals Conceded: {goals_conceded}")
+    st.sidebar.write(f"Average Possession: {possession_avg}%")
+
+    # Add interactive chart
+    st.sidebar.header("Goals Over Time")
+    team_data['MatchDate'] = pd.to_datetime(team_data['Date'])
+    goals_over_time = team_data.groupby('MatchDate')[['FTHG', 'FTAG']].sum()
+    st.sidebar.line_chart(goals_over_time)
+
+    # Input features for prediction
+    st.header("Input Match Details")
     col1, col2 = st.columns(2)
 
     with col1:
-        st.header("Input Match Details")
         HomeGoalAvg = st.number_input("🏠 Average Goals by Home Team (Last 5 Matches):", min_value=0.0, step=0.1)
-        AwayGoalAvg = st.number_input("✈️ Average Goals by Away Team (Last 5 Matches):", min_value=0.0, step=0.1)
         HomeWinRate = st.number_input("🏠 Home Team Win Rate (%):", min_value=0.0, max_value=1.0, step=0.01)
-        AwayWinRate = st.number_input("✈️ Away Team Win Rate (%):", min_value=0.0, max_value=1.0, step=0.01)
 
     with col2:
-        st.header("Visualizations")
-        # Example chart (to be replaced with actual data visualizations)
-        sample_data = {"Matches": ["Match1", "Match2", "Match3", "Match4", "Match5"],
-                       "Goals": [2, 3, 1, 4, 2]}
-        df = pd.DataFrame(sample_data)
-        st.bar_chart(df.set_index("Matches"))
+        AwayGoalAvg = st.number_input("✈️ Average Goals by Away Team (Last 5 Matches):", min_value=0.0, step=0.1)
+        AwayWinRate = st.number_input("✈️ Away Team Win Rate (%):", min_value=0.0, max_value=1.0, step=0.01)
 
     # Predict outcome
     if st.button("🔮 Predict Outcome"):
@@ -62,4 +85,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
