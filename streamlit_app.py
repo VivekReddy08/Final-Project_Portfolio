@@ -31,6 +31,13 @@ def set_background(image_file):
         .stApp {{
             background: url(data:image/png;base64,{image_file});
             background-size: cover;
+            color: white;
+        }}
+        .stMarkdown h1, h2, h3, h4, h5, h6 {{
+            color: white;
+        }}
+        .stMarkdown p {{
+            color: white;
         }}
         </style>
         """,
@@ -46,9 +53,9 @@ def plot_team_performance(team, data):
     plt.figure(figsize=(10, 5))
     sns.lineplot(x='MatchDate', y='FTHG', data=team_data, label='Goals Scored')
     sns.lineplot(x='MatchDate', y='FTAG', data=team_data, label='Goals Conceded')
-    plt.title(f"Performance Over Time: {team}")
-    plt.xlabel("Date")
-    plt.ylabel("Goals")
+    plt.title(f"Performance Over Time: {team}", color="white")
+    plt.xlabel("Date", color="white")
+    plt.ylabel("Goals", color="white")
     plt.legend()
     st.pyplot(plt)
 
@@ -61,9 +68,9 @@ def plot_goal_distribution(team, data):
 
     plt.figure(figsize=(10, 5))
     sns.histplot([goals], bins=10, kde=True)
-    plt.title(f"Goal Distribution for {team}")
-    plt.xlabel("Goals")
-    plt.ylabel("Frequency")
+    plt.title(f"Goal Distribution for {team}", color="white")
+    plt.xlabel("Goals", color="white")
+    plt.ylabel("Frequency", color="white")
     st.pyplot(plt)
 
 def plot_match_outcomes(team, data):
@@ -71,7 +78,7 @@ def plot_match_outcomes(team, data):
     outcomes = team_data['FTR'].value_counts()
     plt.figure(figsize=(5, 5))
     outcomes.plot.pie(autopct='%1.1f%%', startangle=90, colors=['#4CAF50', '#FFC107', '#F44336'])
-    plt.title(f"Match Outcomes for {team}")
+    plt.title(f"Match Outcomes for {team}", color="white")
     st.pyplot(plt)
 
 def plot_head_to_head(team1, team2, data):
@@ -80,7 +87,7 @@ def plot_head_to_head(team1, team2, data):
     outcomes = h2h_data['FTR'].value_counts()
     plt.figure(figsize=(5, 5))
     outcomes.plot.pie(autopct='%1.1f%%', startangle=90, colors=['#4CAF50', '#FFC107', '#F44336'])
-    plt.title(f"Head-to-Head: {team1} vs {team2}")
+    plt.title(f"Head-to-Head: {team1} vs {team2}", color="white")
     st.pyplot(plt)
 
 def compare_teams(team1, team2, data):
@@ -125,14 +132,14 @@ def league_overview(data):
     plt.figure(figsize=(10, 5))
     sns.barplot(x=goals_per_team.index, y=goals_per_team['TotalGoals'])
     plt.xticks(rotation=90)
-    plt.title("Goals Scored by Teams")
-    plt.xlabel("Teams")
-    plt.ylabel("Total Goals")
+    plt.title("Goals Scored by Teams", color="white")
+    plt.xlabel("Teams", color="white")
+    plt.ylabel("Total Goals", color="white")
     st.pyplot(plt)
 
 def app():
     # Load Images
-    background_image = get_base64("pl_logo.jpg")
+    background_image = get_base64("pl_logo.jpg")  # Replace with your logo
     set_background(background_image)
 
     st.title("AI-Powered Football Match Outcome Predictor")
