@@ -72,8 +72,15 @@ def app():
     combined_data, filtered_data = load_data()
     model = load_model()
 
+    # Debugging: Print column names
+    st.write("Columns in the dataset:", combined_data.columns)
+
     # Team Selection
-    teams = combined_data['Team'].unique()
+    teams = combined_data['Team'].unique() if 'Team' in combined_data.columns else []
+    if not teams:
+        st.error("The column 'Team' does not exist in the dataset. Please check the dataset structure.")
+        return
+
     selected_team = st.selectbox("Select a Team", teams)
 
     st.subheader("Team Performance Over Time")
@@ -103,6 +110,7 @@ def app():
 
 if __name__ == "__main__":
     app()
+
 
 
 
