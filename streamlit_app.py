@@ -209,8 +209,9 @@ def league_prediction(data):
         )
 
         # Dynamic Performance Insights: Total Clean Sheets
-      def plot_clean_sheets_chart(data):
-           try:  # Start a try block with proper indentation
+      # Make sure the function is aligned at the top level
+def plot_clean_sheets_chart(data):
+    try:
         clean_sheets = data.groupby("Team")["CleanSheets"].sum().sort_values(ascending=False)
 
         # Create the plot
@@ -226,8 +227,6 @@ def league_prediction(data):
     except Exception as e:
         logging.error(f"Error generating clean sheets chart: {e}")
         st.error(f"Error generating clean sheets chart: {e}")
-
-
 def match_winner_predictor(data):
     try:
         st.subheader("Match Winner Predictor")
