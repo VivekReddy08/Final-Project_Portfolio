@@ -411,10 +411,13 @@ if __name__ == "__main__":
         selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
 
         # Display Team Overview
+        st.subheader("Team Overview")
         plot_team_overview(combined_data, selected_team)
 
         # Display Player Analytics
+        st.subheader("Player Analytics")
         plot_player_analytics(combined_data, selected_team)
+
 
 
 
