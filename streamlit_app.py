@@ -20,13 +20,22 @@ logging.basicConfig(level=logging.ERROR)
 # Load Data
 @st.cache_data
 def load_data():
-    combined_data = pd.read_csv("combined_data.csv")
-    filtered_data = pd.read_csv("filtered_data.csv")
-    return combined_data, filtered_data
+    try:
+        combined_data = pd.read_csv("combined_data.csv")
+        filtered_data = pd.read_csv("filtered_data.csv")
 
-combined_data, filtered_data = load_data()
-if combined_data is None or filtered_data is None:
-    st.stop()
+        # Validate columns
+        required_columns = ['HomeTeam', 'AwayTeam', 'FTHG', 'FTAG', 'FTR']
+        missing_columns = [col for col in required_columns if col not in combined_data.columns]
+        if missing_columns:
+            st.error(f"The following required columns are missing: {missing_columns}")
+            return None, None
+
+        return combined_data, filtered_data
+    except Exception as e:
+        logging.error(f"Error loading data: {e}")
+        st.error("Failed to load data. Please check the file paths.")
+        return None, None
 
 # Debugging: Preview the data
 st.write("Debug: Combined Data Loaded")
@@ -135,11 +144,6 @@ def plot_team_overview(data, team):
     try:
         st.subheader(f"Team Overview for {team}")
 
-        # Debugging: Check input data
-        st.write(f"Debug: Selected Team = {team}")
-        st.write("Debug: Input Data Preview")
-        st.write(data.head())
-
         # Filter team data
         team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
         if team_data.empty:
@@ -160,7 +164,7 @@ def plot_team_overview(data, team):
         st.write(f"**Losses:** {losses}")
         st.write(f"**Draws:** {draws}")
 
-        # Plot Win/Loss/Draw distribution
+        # Win/Loss/Draw distribution pie chart
         labels = ['Wins', 'Losses', 'Draws']
         sizes = [wins, losses, draws]
         colors = ['green', 'red', 'gray']
@@ -170,9 +174,7 @@ def plot_team_overview(data, team):
         st.pyplot(plt)
     except Exception as e:
         logging.error(f"Error in plot_team_overview: {e}")
-        st.error(f"Failed to generate team overview: {e}")
-
-
+        st.error("Failed to generate team overview.")
 def plot_player_analytics(data, team):
     try:
         st.subheader(f"Player Analytics for {team}")
@@ -183,7 +185,7 @@ def plot_player_analytics(data, team):
             st.warning(f"No data available for the selected team: {team}")
             return
 
-        # Simulated player data (replace with actual logic if available)
+        # Simulate player data (replace with actual dataset logic)
         player_stats = {
             "Player": ["Player A", "Player B", "Player C", "Player D"],
             "Goals": [10, 8, 7, 5],
@@ -206,7 +208,7 @@ def plot_player_analytics(data, team):
         st.pyplot(plt)
     except Exception as e:
         logging.error(f"Error in plot_player_analytics: {e}")
-        st.error(f"Failed to generate player analytics: {e}")
+        st.error("Failed to generate player analytics.")
 
 def league_prediction(data):
     try:
@@ -431,15 +433,11 @@ if __name__ == "__main__":
      plot_goal_distribution(combined_data)
 
     with tab2:
-     st.header("Team Performance")
+    st.header("Team Performance")
 
-     # Debug: Preview combined data
-     st.write("Debug: Combined Data Loaded")
-     st.write(combined_data.head())
-
-     # Select a team
-     selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
-     if selected_team:
+    # Select a team
+    selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
+    if selected_team:
         try:
             plot_team_overview(combined_data, selected_team)
         except Exception as e:
@@ -449,8 +447,9 @@ if __name__ == "__main__":
             plot_player_analytics(combined_data, selected_team)
         except Exception as e:
             st.error(f"Error in plot_player_analytics: {e}")
-     else:
+    else:
         st.warning("Please select a valid team.")
+
 
 
     with tab3:
