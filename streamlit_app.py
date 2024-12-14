@@ -24,20 +24,23 @@ def load_model():
 
 # Helper Function: Load Base64 Encoded Image
 # Helper Function: Load Base64 Encoded Image
+# Helper Function: Load Base64 Encoded Image
 def get_base64(file_path):
     with open(file_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-# Set Background Image with Gradient
+# Set Background Image
 def set_background(image_file):
     base64_image = get_base64(image_file)
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), 
-            url(data:image/jpg;base64,{base64_image});
+            background-image: url("data:image/jpg;base64,{base64_image}");
             background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
             color: white;
         }}
         </style>
