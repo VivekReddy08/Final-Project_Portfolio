@@ -234,36 +234,32 @@ def match_winner_predictor(data):
             st.error("Error generating win probability pie chart.")
 
        
-# Improved Goals Distribution Visualization
-def plot_goals_distribution(data, team1, team2):
+# Display Goals Distribution Values
+def display_goals_distribution(data, team1, team2):
     try:
         h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
                    ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
-        goals = h2h['FTHG'].tolist() + h2h['FTAG'].tolist()
+        goals_home = h2h['FTHG'].tolist()
+        goals_away = h2h['FTAG'].tolist()
 
-        if len(goals) == 0:
-            st.warning(f"No match data available between {team1} and {team2} for visualization.")
+        if len(goals_home) == 0 and len(goals_away) == 0:
+            st.warning(f"No match data available between {team1} and {team2}.")
             return
 
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.hist(goals, bins=range(0, max(goals) + 2), color='skyblue', edgecolor='black', alpha=0.8)
-        ax.set_title(f"Goals Distribution in Matches between {team1} and {team2}", fontsize=14)
-        ax.set_xlabel("Number of Goals Scored", fontsize=12)
-        ax.set_ylabel("Frequency of Matches", fontsize=12)
-        ax.grid(axis="y", linestyle="--", alpha=0.7)
+        # Combine data into a DataFrame
+        goals_data = pd.DataFrame({
+            f"{team1} Goals (Home)": goals_home,
+            f"{team2} Goals (Away)": goals_away
+        })
 
-        # Annotating each bar
-        for bin_edge, height in zip(range(len(goals)), np.histogram(goals, bins=range(len(goals) + 1))[0]):
-            if height > 0:
-                ax.text(bin_edge + 0.5, height, f'{int(height)}', ha='center', va='bottom', fontsize=10)
-
-        st.pyplot(fig)
+        st.subheader(f"Goals Distribution: {team1} vs {team2}")
+        st.dataframe(goals_data)
     except Exception as e:
-        st.error(f"An error occurred while generating the goals distribution chart: {e}")
-        logging.error(f"Error in plot_goals_distribution: {e}")
+        st.error(f"An error occurred while displaying the goals distribution: {e}")
+        logging.error(f"Error in display_goals_distribution: {e}")
 
-# Improved Head-to-Head Results Bar Chart
-def plot_h2h_results_chart(data, team1, team2):
+# Display Head-to-Head Results in Table
+def display_h2h_results(data, team1, team2):
     try:
         h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
                    ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
@@ -275,23 +271,17 @@ def plot_h2h_results_chart(data, team1, team2):
             st.warning(f"No head-to-head match data available between {team1} and {team2}.")
             return
 
-        fig, ax = plt.subplots(figsize=(8, 6))
-        bars = ax.bar(["Team 1 Wins", "Team 2 Wins", "Draws"], [team1_wins, team2_wins, draws],
-                      color=['#1f77b4', '#ff7f0e', '#2ca02c'], edgecolor="black", alpha=0.9)
-        ax.set_title(f"Head-to-Head Results: {team1} vs {team2}", fontsize=14)
-        ax.set_xlabel("Result", fontsize=12)
-        ax.set_ylabel("Count", fontsize=12)
-        ax.grid(axis="y", linestyle="--", alpha=0.7)
+        # Prepare data for display
+        results_data = pd.DataFrame({
+            "Result": ["Team 1 Wins", "Team 2 Wins", "Draws"],
+            "Count": [team1_wins, team2_wins, draws]
+        })
 
-        # Annotating each bar
-        for bar in bars:
-            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), f'{int(bar.get_height())}', 
-                    ha='center', va='bottom', fontsize=10)
-
-        st.pyplot(fig)
+        st.subheader(f"Head-to-Head Results: {team1} vs {team2}")
+        st.dataframe(results_data)
     except Exception as e:
-        st.error(f"An error occurred while generating the head-to-head results chart: {e}")
-        logging.error(f"Error in plot_h2h_results_chart: {e}")
+        st.error(f"An error occurred while displaying the head-to-head results: {e}")
+        logging.error(f"Error in display_h2h_results: {e}")
 
 # App Layout with Tabs
 def app():
@@ -312,13 +302,14 @@ def app():
     with tab2:
         st.header("Team Performance")
         selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
-        plot_goal_distribution(combined_data, selected_team, selected_team)
+        plot_goal_distribution(combined_data)
 
     with tab3:
         st.header("Head-to-Head")
         team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
         team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1], key="h2h_team2")
-        plot_h2h_results_chart(combined_data, team1, team2)
+        display_h2h_results(combined_data, team1, team2)
+        display_goals_distribution(combined_data, team1, team2)
 
     with tab4:
         st.header("Match Prediction")
@@ -327,5 +318,6 @@ def app():
 
 if __name__ == "__main__":
     app()
+
 
 
