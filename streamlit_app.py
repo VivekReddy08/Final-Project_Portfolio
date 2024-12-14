@@ -7,36 +7,29 @@ import joblib
 import base64
 import logging
 import os
-if not os.path.exists("pl_logo.jpg"):
-    st.error("File 'pl_logo.jpg' not found in the current directory.")
-else:
-    st.success("File 'pl_logo.jpg' found successfully.")
-
-
 
 # Setup logging
 logging.basicConfig(level=logging.ERROR)
 
-# Load Data
-combined_data, filtered_data = load_data()  # Call the load_data function to load your datasets
+# Define the load_data function
+@st.cache_data
+def load_data():
+    try:
+        combined_data = pd.read_csv("combined_data.csv")
+        filtered_data = pd.read_csv("filtered_data.csv")
+        return combined_data, filtered_data
+    except Exception as e:
+        logging.error(f"Error loading data: {e}")
+        st.error("Failed to load data. Please check the file paths.")
+        return None, None
 
-# Check if the data is loaded successfully
+# Call the load_data function
+combined_data, filtered_data = load_data()
+
+# Verify if the data was loaded successfully
 if combined_data is None or filtered_data is None:
     st.error("Data failed to load. Please check the CSV file paths.")
     st.stop()
-
-# Debugging: Check data structure
-st.write("Debug: Combined Data Loaded")
-st.write(combined_data.head())  # Show the first few rows of the combined dataset
-
-# Validate required columns in the dataset
-required_columns = ['HomeTeam', 'AwayTeam', 'FTHG', 'FTAG', 'FTR']
-missing_columns = [col for col in required_columns if col not in combined_data.columns]
-if missing_columns:
-    st.error(f"The dataset is missing the following columns: {missing_columns}")
-    st.stop()
-
-
 # Debugging: Preview the data
 st.write("Debug: Combined Data Loaded")
 st.write(combined_data.head())
