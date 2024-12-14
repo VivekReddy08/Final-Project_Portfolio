@@ -25,24 +25,35 @@ def load_model():
 # Helper Function: Load Base64 Encoded Image
 # Helper Function: Load Base64 Encoded Image
 # Helper Function: Load Base64 Encoded Image
-def get_base64(pl_logo.jpg):
-    with open(pl_logo.jpg, "rb") as f:
-        return base64.b64encode(f.read()).decode()
-# Set Background Image
-def set_background(image_file):
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background: url(data:image/png;base64,{image_file});
-            background-size: cover;
-            color: white;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+def get_base64(file_path):
+    try:
+        with open(file_path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    except Exception as e:
+        logging.error(f"Error loading image: {e}")
+        st.error("Failed to load background image.")
+        return ""
 
+def set_background(image_file):
+    try:
+        image_base64 = get_base64(image_file)
+        if image_base64:
+            st.markdown(
+                f"""
+                <style>
+                .stApp {{
+                    background: url(data:image/png;base64,{image_base64});
+                    background-size: cover;
+                    background-position: center;
+                    color: white;
+                }}
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
+    except Exception as e:
+        logging.error(f"Error in set_background: {e}")
+        st.error("Failed to apply background image.")
 # App Layout with Background Setup
 def app():
     # Set background image
