@@ -184,103 +184,62 @@ def league_prediction(data):
         logging.error(f"Error in league_prediction: {e}")
         st.error(f"Error generating league predictions: {e}")
 
-def match_winner_predictor(data):
-    try:
-        st.subheader("Match Winner Predictor")
+def enhanced_match_prediction(data):
+    st.subheader("Enhanced Match Prediction Insights")
 
-        # Team Selection
-        team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique(), key="match_team1")
-        team2 = st.selectbox("Select Team 2", [t for t in data['AwayTeam'].unique() if t != team1], key="match_team2")
+    # Team Selection
+    team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique(), key="enhanced_team1")
+    team2 = st.selectbox("Select Team 2", [t for t in data['AwayTeam'].unique() if t != team1], key="enhanced_team2")
 
-        # Filter data for both teams
-        team1_home = data[data['HomeTeam'] == team1]
-        team2_away = data[data['AwayTeam'] == team2]
+    # Filter Data
+    team1_home = data[data['HomeTeam'] == team1]
+    team2_away = data[data['AwayTeam'] == team2]
+    h2h_matches = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
+                       ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
 
-        # Average Goals
-        team1_avg_goals = team1_home['FTHG'].mean()
-        team2_avg_goals = team2_away['FTAG'].mean()
+    if h2h_matches.empty:
+        st.warning(f"No head-to-head data available between {team1} and {team2}.")
+        return
 
-        # Head-to-Head Stats
-        h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
-                   ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
-        team1_wins = len(h2h[h2h['FTR'] == 'H'])
-        team2_wins = len(h2h[h2h['FTR'] == 'A'])
-        draws = len(h2h[h2h['FTR'] == 'D'])
-        total_matches = len(h2h)
+    # Calculate Statistics
+    team1_avg_goals_home = team1_home['FTHG'].mean()
+    team2_avg_goals_away = team2_away['FTAG'].mean()
 
-        team1_win_prob = (team1_wins / total_matches) * 100 if total_matches > 0 else 0
-        team2_win_prob = (team2_wins / total_matches) * 100 if total_matches > 0 else 0
-        draw_prob = (draws / total_matches) * 100 if total_matches > 0 else 0
+    team1_wins = len(h2h_matches[h2h_matches['FTR'] == 'H'])
+    team2_wins = len(h2h_matches[h2h_matches['FTR'] == 'A'])
+    draws = len(h2h_matches[h2h_matches['FTR'] == 'D'])
 
-        # Display Insights
-        st.write(f"**{team1} Avg Goals (Home):** {team1_avg_goals:.2f}")
-        st.write(f"**{team2} Avg Goals (Away):** {team2_avg_goals:.2f}")
-        st.write(f"**Head-to-Head (Total Matches):** {total_matches}")
-        st.write(f"**{team1} Win %:** {team1_win_prob:.2f}%")
-        st.write(f"**{team2} Win %:** {team2_win_prob:.2f}%")
-        st.write(f"**Draw %:** {draw_prob:.2f}%")
+    # Total Matches
+    total_matches = len(h2h_matches)
 
-        # Win Probability Pie Chart
-        try:
-            labels = [f"{team1} Win", f"{team2} Win", "Draw"]
-            probabilities = [team1_win_prob, team2_win_prob, draw_prob]
+    # Probabilities
+    team1_win_prob = (team1_wins / total_matches) * 100
+    team2_win_prob = (team2_wins / total_matches) * 100
+    draw_prob = (draws / total_matches) * 100
 
-            plt.figure(figsize=(6, 6))
-            plt.pie(probabilities, labels=labels, autopct='%1.1f%%', startangle=140, colors=['#ff9999', '#66b3ff', '#99ff99'])
-            plt.title("Win Probability")
-            st.pyplot(plt)
-        except Exception as e:
-            logging.error(f"Error in Win Probability Pie Chart: {e}")
-            st.error("Error generating win probability pie chart.")
+    # Insights Table
+    insights_df = pd.DataFrame({
+        "Metric": ["Avg Goals Scored (Home)", "Avg Goals Scored (Away)", "Total Matches", "Team 1 Wins", "Team 2 Wins", "Draws"],
+        team1: [team1_avg_goals_home, "-", total_matches, team1_wins, "-", "-"],
+        team2: ["-", team2_avg_goals_away, "-", "-", team2_wins, draws]
+    })
 
-       
-# Display Goals Distribution in a Table
-def display_goals_distribution(data, team1, team2):
-    # Filter head-to-head matches
-    h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
-               ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
+    st.write("### Head-to-Head Insights")
+    st.table(insights_df)
 
-    # Check if there's any data to display
-    if h2h.empty:
-        st.warning(f"No match data available between {team1} and {team2}.")
+    # Probabilities
+    st.write("### Win Probability")
+    st.write(f"**{team1} Win Probability:** {team1_win_prob:.2f}%")
+    st.write(f"**{team2} Win Probability:** {team2_win_prob:.2f}%")
+    st.write(f"**Draw Probability:** {draw_prob:.2f}%")
+
+    # Predicted Winner
+    if team1_win_prob > team2_win_prob:
+        st.success(f"Predicted Winner: {team1}")
+    elif team2_win_prob > team1_win_prob:
+        st.success(f"Predicted Winner: {team2}")
     else:
-        # Extract goals scored by each team
-        goals_home = h2h['FTHG'].tolist()
-        goals_away = h2h['FTAG'].tolist()
-
-        # Create a DataFrame to display goals
-        goals_data = pd.DataFrame({
-            f"{team1} Goals (Home)": goals_home,
-            f"{team2} Goals (Away)": goals_away
-        })
-
-        st.subheader(f"Goals Distribution Between {team1} and {team2}")
-        st.write(goals_data)
-
-
-# Display Head-to-Head Results in a Table
-def display_h2h_results(data, team1, team2):
-    # Filter head-to-head matches
-    h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
-               ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
-
-    # Calculate results
-    team1_wins = len(h2h[h2h['FTR'] == 'H'])
-    team2_wins = len(h2h[h2h['FTR'] == 'A'])
-    draws = len(h2h[h2h['FTR'] == 'D'])
-
-    # Check if there's any data to display
-    if team1_wins == 0 and team2_wins == 0 and draws == 0:
-        st.warning(f"No head-to-head match data available between {team1} and {team2}.")
-    else:
-        # Create a DataFrame to display results
-        results_data = pd.DataFrame({
-            "Result": ["Team 1 Wins", "Team 2 Wins", "Draws"],
-            "Count": [team1_wins, team2_wins, draws]
-        })
-
-        st.subheader(f"Head-to-Head Results Between {team1} and {team2}")
-        st.write(results_data)
+        st.info("It's likely to be a draw!")
 
 # App Layout with Tabs
 def app():
@@ -318,7 +277,7 @@ def app():
     with tab4:
         st.header("Match Prediction")
         league_prediction(combined_data)
-        match_winner_predictor(combined_data)
+        enhanced_match_prediction(combined_data)
 
 if __name__ == "__main__":
     app()
