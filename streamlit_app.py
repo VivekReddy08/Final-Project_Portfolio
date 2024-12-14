@@ -50,11 +50,12 @@ def plot_goals_heatmap(data):
 
         plt.figure(figsize=(10, 8))
         sns.heatmap(pivot_data, annot=True, fmt="g", cmap="coolwarm")
-        plt.title("Heatmap of Goals Scored (Home vs. Away)", color="white")
+        plt.title("Heatmap of Goals Scored (Home vs. Away)", color="black")
         st.pyplot(plt)
     except Exception as e:
         logging.error(f"Error in plot_goals_heatmap: {e}")
         st.error(f"Error generating heatmap: {e}")
+
 
 def plot_avg_goals_trend(data):
     try:
