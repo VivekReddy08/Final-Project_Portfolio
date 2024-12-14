@@ -69,7 +69,7 @@ The application is hosted on Streamlit Cloud. Access it here:
 
 ## Video Walkthrough
 A detailed video walkthrough of the project can be found here:
-[YouTube Video Link](#)
+[[YouTube Video Link](https://youtu.be/N25tWNJYFd4)](#)
 
 ## Challenges and Lessons Learned
 - **Data Cleaning**: Managing missing or inconsistent data in the match dataset required additional preprocessing steps.
