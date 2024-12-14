@@ -12,6 +12,36 @@ if not os.path.exists("pl_logo.jpg"):
 else:
     st.success("File 'pl_logo.jpg' found successfully.")
 
+def get_base64(file_path):
+    try:
+        with open(file_path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    except Exception as e:
+        st.error(f"Error loading image: {e}")
+        return ""
+
+def set_background(image_file):
+    image_base64 = get_base64(image_file)
+    if image_base64:
+        st.markdown(
+            f"""
+            <style>
+            .stApp {{
+                background-image: url("data:image/png;base64,{image_base64}");
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+
+# Example Usage
+set_background("pl_logo.jpg")  # Replace with your image file path
+
+
 # Setup logging
 logging.basicConfig(level=logging.ERROR)
 
@@ -26,37 +56,6 @@ def load_data():
 @st.cache_data
 def load_model():
     return joblib.load("ensemble_model.pkl")
-
-# Helper Function: Load Base64 Encoded Image
-# Helper Function: Load Base64 Encoded Image
-# Helper Function: Load Base64 Encoded Image
-def set_background(image_file):
-    try:
-        logging.error(f"Setting background with image file: {image_file}")
-        image_base64 = get_base64(image_file)
-        if image_base64:
-            st.markdown(
-                f"""
-                <style>
-                .stApp {{
-                    background: url(data:image/png;base64,{image_base64});
-                    background-size: cover;
-                    background-position: center;
-                    color: white;
-                }}
-                </style>
-                """,
-                unsafe_allow_html=True
-            )
-            logging.error("Background applied successfully.")
-        else:
-            logging.error("Failed to encode the image file.")
-    except Exception as e:
-        logging.error(f"Error in set_background: {e}")
-        st.error("Failed to apply background image.")
-
-
-
 # Enhanced Visualizations
 def plot_goals_heatmap(data):
     try:
