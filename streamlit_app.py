@@ -119,8 +119,16 @@ def plot_team_overview(data, team):
     try:
         st.subheader(f"Team Overview for {team}")
 
+        # Debugging Inputs
+        st.write(f"Debug: Selected Team = {team}")
+        st.write(f"Debug: Data Preview")
+        st.write(data.head())
+
         # Filter team data
         team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
+        if team_data.empty:
+            st.warning(f"No data available for {team}")
+            return
 
         # Total matches, wins, losses, and draws
         total_matches = len(team_data)
@@ -145,7 +153,8 @@ def plot_team_overview(data, team):
         st.pyplot(plt)
     except Exception as e:
         logging.error(f"Error in plot_team_overview: {e}")
-        st.error("Failed to generate team overview.")
+        st.error(f"Failed to generate team overview: {e}")
+
 # Add enhanced visualizations for Team Performance
 st.subheader("Team Overview")
 plot_team_overview(combined_data, selected_team)
