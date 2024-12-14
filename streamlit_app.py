@@ -443,6 +443,21 @@ tab1, tab2, tab3, tab4 = st.tabs(["League Overview", "Team Performance", "Head-t
 
 with tab1:
     st.header("League Overview")
+    # Add information about the English Premier League
+    st.markdown(
+        """
+        The **English Premier League (EPL)** is the top-tier football league in England, known as one of the most competitive and widely watched football leagues in the world. 
+        Founded in 1992, the league consists of 20 clubs that compete in a round-robin format over the course of a season, typically running from August to May.
+        Each team plays 38 matches, facing each opponent twice — once at home and once away.
+
+        The EPL is renowned for its thrilling matches, passionate fan base, and global appeal, attracting some of the best players and managers in the sport. 
+        Clubs like **Manchester United**, **Liverpool**, **Chelsea**, **Arsenal**, and **Manchester City** have established themselves as dominant forces in the league.
+        The competition is not only about winning the championship but also involves a fierce battle to qualify for European competitions and to avoid relegation to the lower division.
+
+        Whether you're a die-hard football fan or a casual observer, the EPL offers excitement, drama, and moments that captivate audiences worldwide.
+        """,
+        unsafe_allow_html=True
+    )
     plot_goals_heatmap(combined_data)
     plot_avg_goals_trend(combined_data)
     plot_goal_distribution(combined_data)
