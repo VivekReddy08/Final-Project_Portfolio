@@ -243,15 +243,15 @@ def plot_goals_distribution(data, team1, team2):
 
         plt.figure(figsize=(10, 6))
         n, bins, patches = plt.hist(goals, bins=range(0, max(goals) + 2), color='skyblue', edgecolor='black', alpha=0.8)
-        plt.title(f"Goals Distribution in Matches between {team1} and {team2}", fontsize=14, color="white")
-        plt.xlabel("Number of Goals Scored", fontsize=12, color="white")
-        plt.ylabel("Frequency of Matches", fontsize=12, color="white")
+        plt.title(f"Goals Distribution in Matches between {team1} and {team2}", fontsize=14)
+        plt.xlabel("Number of Goals Scored", fontsize=12)
+        plt.ylabel("Frequency of Matches", fontsize=12)
         plt.grid(axis="y", linestyle="--", alpha=0.7)
 
         # Annotating each bar
-        for count, x in zip(n, bins):
+        for count, x in zip(n, bins[:-1]):
             if count > 0:
-                plt.text(x + 0.5, count, f'{int(count)}', ha='center', va='bottom', fontsize=10, color="white")
+                plt.text(x + 0.5, count, f'{int(count)}', ha='center', va='bottom', fontsize=10)
 
         st.pyplot(plt)
     except Exception as e:
@@ -270,40 +270,20 @@ def plot_h2h_results_chart(data, team1, team2):
 
         plt.figure(figsize=(8, 6))
         bars = plt.bar(results.keys(), results.values(), color=['#1f77b4', '#ff7f0e', '#2ca02c'], edgecolor="black", alpha=0.9)
-        plt.title(f"Head-to-Head Results: {team1} vs {team2}", fontsize=14, color="white")
-        plt.xlabel("Result", fontsize=12, color="white")
-        plt.ylabel("Count", fontsize=12, color="white")
+        plt.title(f"Head-to-Head Results: {team1} vs {team2}", fontsize=14)
+        plt.xlabel("Result", fontsize=12)
+        plt.ylabel("Count", fontsize=12)
         plt.grid(axis="y", linestyle="--", alpha=0.7)
 
         # Annotating each bar
         for bar in bars:
             plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), f'{int(bar.get_height())}', 
-                     ha='center', va='bottom', fontsize=10, color="white")
+                     ha='center', va='bottom', fontsize=10)
 
         st.pyplot(plt)
     except Exception as e:
         logging.error(f"Error in Head-to-Head Result Bar Chart: {e}")
         st.error("Error generating head-to-head result bar chart.")
-
-
-        st.pyplot(plt)
-    except Exception as e:
-        logging.error(f"Error in Head-to-Head Result Bar Chart: {e}")
-        st.error("Error generating head-to-head result bar chart.")
-
-        # Predict Winner
-        if team1_win_prob > team2_win_prob:
-            st.success(f"Predicted Winner: {team1}")
-        elif team2_win_prob > team1_win_prob:
-            st.success(f"Predicted Winner: {team2}")
-        else:
-            st.info("It's likely to be a draw!")
-    except Exception as e:
-        logging.error(f"Error in match_winner_predictor: {e}")
-        st.error(f"Error predicting match winner: {e}")
-
-
-
 
 # App Layout with Tabs
 def app():
@@ -324,13 +304,13 @@ def app():
     with tab2:
         st.header("Team Performance")
         selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
-        plot_goal_distribution(combined_data)
+        plot_goal_distribution(combined_data, selected_team, selected_team)  # Added single team distribution
 
     with tab3:
         st.header("Head-to-Head")
         team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
         team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1], key="h2h_team2")
-        plot_head_to_head_bar(team1, team2, combined_data)
+        plot_h2h_results_chart(combined_data, team1, team2)
 
     with tab4:
         st.header("Match Prediction")
