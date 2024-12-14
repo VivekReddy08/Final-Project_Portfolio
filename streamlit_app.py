@@ -329,8 +329,9 @@ def enhanced_match_prediction(data):
 # App Layout with Tabs
 
 if __name__ == "__main__":
-    # Set the background
-    set_background("pl_logo.jpg")  # Ensure pl_logo.jpg is in the same directory
+    # Set the background image
+    set_background("pl_logo.jpg")  # Make sure the file is in the same directory
+
     
     # Load data
     combined_data, filtered_data = load_data()
