@@ -27,6 +27,7 @@ def load_model():
 # Helper Function: Load Base64 Encoded Image
 def get_base64(file_path):
     try:
+        st.error(f"Attempting to load image from: {file_path}")
         with open(file_path, "rb") as f:
             return base64.b64encode(f.read()).decode()
     except Exception as e:
