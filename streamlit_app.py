@@ -285,38 +285,35 @@ def enhanced_match_prediction(data):
 # App Layout with Tabs
 # Tabs Initialization
 # App Layout with Tabs
-combined_data, filtered_data = load_data()  # Ensure data is loaded globally
-
-tab1, tab2, tab3, tab4 = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
-
-# Tab 1: League Overview
-with tab1:
-    st.header("League Overview")
-    plot_goals_heatmap(combined_data)  # Fix function implementation above
-    plot_avg_goals_trend(combined_data)
-    plot_goal_distribution(combined_data)
-
-# Tab 2: Team Performance
-with tab2:
-    st.header("Team Performance")
-    selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
-    plot_goal_distribution(combined_data)
-
-# Tab 3: Head-to-Head
-with tab3:
-    st.header("Head-to-Head")
-    team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
-    team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1], key="h2h_team2")
-    display_h2h_results(combined_data, team1, team2)  # Fix function implementation above
-
-# Tab 4: Match Prediction
-with tab4:
-    st.header("Match Prediction")
-    league_prediction(combined_data)
-    enhanced_match_prediction(combined_data)  # Use updated function logic
 
 if __name__ == "__main__":
-    app()
+    # Load data
+    combined_data, filtered_data = load_data()
+    
+    # Tabs for different sections
+    tab1, tab2, tab3, tab4 = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
+
+    with tab1:
+        st.header("League Overview")
+        plot_goals_heatmap(combined_data)
+        plot_avg_goals_trend(combined_data)
+        plot_goal_distribution(combined_data)
+
+    with tab2:
+        st.header("Team Performance")
+        selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
+        plot_goal_distribution(combined_data)
+
+    with tab3:
+        st.header("Head-to-Head")
+        team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
+        team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1], key="h2h_team2")
+        display_h2h_results(combined_data, team1, team2)
+
+    with tab4:
+        st.header("Match Prediction")
+        league_prediction(combined_data)
+        enhanced_match_prediction(combined_data)
 
 
 
