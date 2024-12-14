@@ -234,30 +234,31 @@ def match_winner_predictor(data):
             st.error("Error generating win probability pie chart.")
 
        
-# Display Goals Distribution Values Without Error-Prone Try Blocks
+# Display Goals Distribution in a Table
 def display_goals_distribution(data, team1, team2):
     h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
                ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
-    goals_home = h2h['FTHG'].tolist()
-    goals_away = h2h['FTAG'].tolist()
 
-    if not goals_home and not goals_away:
+    if h2h.empty:
         st.warning(f"No match data available between {team1} and {team2}.")
         return
 
-    # Combine data into a DataFrame
+    goals_home = h2h['FTHG'].tolist()
+    goals_away = h2h['FTAG'].tolist()
+
     goals_data = pd.DataFrame({
         f"{team1} Goals (Home)": goals_home,
         f"{team2} Goals (Away)": goals_away
     })
 
-    st.subheader(f"Goals Distribution: {team1} vs {team2}")
-    st.dataframe(goals_data)
+    st.subheader(f"Goals Distribution Between {team1} and {team2}")
+    st.write(goals_data)
 
-# Display Head-to-Head Results in Table Without Error-Prone Try Blocks
+# Display Head-to-Head Results in a Table
 def display_h2h_results(data, team1, team2):
     h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
                ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
+
     team1_wins = len(h2h[h2h['FTR'] == 'H'])
     team2_wins = len(h2h[h2h['FTR'] == 'A'])
     draws = len(h2h[h2h['FTR'] == 'D'])
@@ -266,23 +267,25 @@ def display_h2h_results(data, team1, team2):
         st.warning(f"No head-to-head match data available between {team1} and {team2}.")
         return
 
-    # Prepare data for display
     results_data = pd.DataFrame({
         "Result": ["Team 1 Wins", "Team 2 Wins", "Draws"],
         "Count": [team1_wins, team2_wins, draws]
     })
 
-    st.subheader(f"Head-to-Head Results: {team1} vs {team2}")
-    st.dataframe(results_data)
+    st.subheader(f"Head-to-Head Results Between {team1} and {team2}")
+    st.write(results_data)
 
 # App Layout with Tabs
 def app():
+    # Set Background Image
     background_image = get_base64("pl_logo.jpg")
     set_background(background_image)
+
+    # Title and Data Loading
     st.title("AI-Powered Football Match Outcome Predictor")
     combined_data, filtered_data = load_data()
-    model = load_model()
 
+    # Tabs
     tab1, tab2, tab3, tab4 = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
 
     with tab1:
@@ -300,6 +303,8 @@ def app():
         st.header("Head-to-Head")
         team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
         team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1], key="h2h_team2")
+        
+        # Display Goals and Results
         display_h2h_results(combined_data, team1, team2)
         display_goals_distribution(combined_data, team1, team2)
 
@@ -310,6 +315,7 @@ def app():
 
 if __name__ == "__main__":
     app()
+
 
 
 
