@@ -420,7 +420,7 @@ if __name__ == "__main__":
      plot_goal_distribution(combined_data)
 
     with tab2:
-     st.header("Team Performance")
+     
 
 
 
