@@ -415,7 +415,12 @@ if __name__ == "__main__":
     st.write("Debug: Combined Data Loaded")
     st.write(combined_data.head())
 
-    tab1, tab2, tab3, tab4 = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
+    # Initialize the tabs
+tab1, tab2, tab3, tab4 = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
+
+# Use tab2 inside the `with` block
+
+
 
     with tab1:
         st.header("League Overview")
