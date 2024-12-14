@@ -406,13 +406,34 @@ if __name__ == "__main__":
         plot_goal_distribution(combined_data)
 
     with tab2:
-        st.header("Team Performance")
-        selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
-        st.subheader("Team Overview")
-    plot_team_overview(combined_data, selected_team)
+    st.header("Team Performance")
 
+    # Debug: Check if combined_data is loaded
+    if combined_data is not None:
+        st.write("Data Loaded Successfully!")
+    else:
+        st.error("Combined Data is not loaded. Please check your dataset.")
+
+    # Debug: Confirm team selection
+    selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
+    st.write(f"Selected Team: {selected_team}")
+
+    # Debug: Call and confirm plot_team_overview
+    st.subheader("Team Overview")
+    try:
+        plot_team_overview(combined_data, selected_team)
+        st.success("Team Overview plot generated successfully!")
+    except Exception as e:
+        st.error(f"Error in Team Overview: {e}")
+
+    # Debug: Call and confirm plot_player_analytics
     st.subheader("Player Analytics")
-    plot_player_analytics(combined_data, selected_team)
+    try:
+        plot_player_analytics(combined_data, selected_team)
+        st.success("Player Analytics plot generated successfully!")
+    except Exception as e:
+        st.error(f"Error in Player Analytics: {e}")
+
 
     with tab3:
         st.header("Head-to-Head")
