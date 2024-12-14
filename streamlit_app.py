@@ -6,6 +6,11 @@ import seaborn as sns
 import joblib
 import base64
 import logging
+import os
+if not os.path.exists("pl_logo.jpg"):
+    st.error("File 'pl_logo.jpg' not found in the current directory.")
+else:
+    st.success("File 'pl_logo.jpg' found successfully.")
 
 # Setup logging
 logging.basicConfig(level=logging.ERROR)
