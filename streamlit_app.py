@@ -25,18 +25,9 @@ def load_model():
 # Helper Function: Load Base64 Encoded Image
 # Helper Function: Load Base64 Encoded Image
 # Helper Function: Load Base64 Encoded Image
-def get_base64(file_path):
-    try:
-        st.error(f"Attempting to load image from: {file_path}")
-        with open(file_path, "rb") as f:
-            return base64.b64encode(f.read()).decode()
-    except Exception as e:
-        logging.error(f"Error loading image: {e}")
-        st.error("Failed to load background image.")
-        return ""
-
 def set_background(image_file):
     try:
+        logging.error(f"Setting background with image file: {image_file}")
         image_base64 = get_base64(image_file)
         if image_base64:
             st.markdown(
@@ -52,21 +43,12 @@ def set_background(image_file):
                 """,
                 unsafe_allow_html=True
             )
+            logging.error("Background applied successfully.")
+        else:
+            logging.error("Failed to encode the image file.")
     except Exception as e:
         logging.error(f"Error in set_background: {e}")
         st.error("Failed to apply background image.")
-# App Layout with Background Setup
-def app():
-    # Set background image
-    set_background("pl_logo.jpg")  # Ensure pl_logo.jpg is in the same directory as this script
-
-    # App content starts here
-    st.title("AI-Powered Football Match Outcome Predictor")
-    st.write("Welcome to the football analytics dashboard powered by Streamlit!")
-    # Add your app's functionality below...
-
-if __name__ == "__main__":
-    app()
 
 
 
