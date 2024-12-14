@@ -23,24 +23,31 @@ def load_model():
     return joblib.load("ensemble_model.pkl")
 
 # Helper Function: Load Base64 Encoded Image
-def get_base64(file_path):
-    with open(file_path, "rb") as f:
-        return base64.b64encode(f.read()).decode()
-
-# Set Background Image with Gradient
-def set_background(image_file):
+def set_background(pl_logo):
+    image_base64 = get_base64(pl_logo)  # Encode the image in base64
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url(data:image/png;base64,{image_file});
+            background: url(data:pl_logo;base64,{image_base64});
             background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;
+            color: white;
+        }}
+        h1, h2, h3, h4, h5, h6 {{
+            color: white;
+        }}
+        p {{
             color: white;
         }}
         </style>
         """,
         unsafe_allow_html=True
     )
+
+
 
 # Enhanced Visualizations
 def plot_goals_heatmap(data):
