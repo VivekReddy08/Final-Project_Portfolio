@@ -470,7 +470,7 @@ with tab1:
 
 This application is designed to provide an engaging and data-driven experience for football enthusiasts and analysts. Leveraging machine learning models and historical data from the English Premier League, this app offers in-depth insights into team performance, player analytics, head-to-head statistics, and match predictions.
 
-In the **League Overview tab**, you’ll find a summary of league-wide statistics, including goal trends, team goal distributions, and a heatmap showcasing goals scored between teams. These visualizations give you a bird’s-eye view of the league’s dynamics and key highlights.
+In the **Overview tab**, you’ll find a summary of league-wide statistics, including goal trends, team goal distributions, and a heatmap showcasing goals scored between teams. These visualizations give you a bird’s-eye view of the league’s dynamics and key highlights.
 
 Whether you're a fan seeking insights into your favorite team, a data enthusiast exploring trends, or someone looking for reliable match predictions, this app serves as a powerful tool to enhance your understanding of the beautiful game.
 """)
