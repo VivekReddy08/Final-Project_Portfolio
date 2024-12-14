@@ -184,7 +184,6 @@ def league_prediction(data):
         logging.error(f"Error in league_prediction: {e}")
         st.error(f"Error generating league predictions: {e}")
 
-# Corrected Head-to-Head Results Display
 def display_h2h_results(data, team1, team2):
     try:
         # Filter head-to-head data
@@ -306,7 +305,8 @@ def app():
         selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
         plot_goal_distribution(combined_data)
 
-   with tab3:
+# Update the Head-to-Head Tab
+with tab3:
     st.header("Head-to-Head")
     team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
     team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1], key="h2h_team2")
