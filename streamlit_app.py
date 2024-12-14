@@ -18,20 +18,24 @@ else:
 logging.basicConfig(level=logging.ERROR)
 
 # Load Data
+combined_data, filtered_data = load_data()  # Call the load_data function to load your datasets
+
+# Check if the data is loaded successfully
 if combined_data is None or filtered_data is None:
     st.error("Data failed to load. Please check the CSV file paths.")
     st.stop()
 
 # Debugging: Check data structure
 st.write("Debug: Combined Data Loaded")
-st.write(combined_data.head())
+st.write(combined_data.head())  # Show the first few rows of the combined dataset
 
-# Check required columns
+# Validate required columns in the dataset
 required_columns = ['HomeTeam', 'AwayTeam', 'FTHG', 'FTAG', 'FTR']
 missing_columns = [col for col in required_columns if col not in combined_data.columns]
 if missing_columns:
     st.error(f"The dataset is missing the following columns: {missing_columns}")
     st.stop()
+
 
 # Debugging: Preview the data
 st.write("Debug: Combined Data Loaded")
