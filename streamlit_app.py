@@ -461,10 +461,20 @@ if __name__ == "__main__":
     combined_data, filtered_data = load_data()
     
     # App Layout with Tabs
-tab1, tab2, tab3, tab4 = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
+tab1, tab2, tab3, tab4 = st.tabs(["Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
 
 with tab1:
-    st.header("League Overview")
+    st.header("Overview")
+    st.markdown("""
+**Welcome to the AI-Powered Football Match Outcome Predictor!**
+
+This application is designed to provide an engaging and data-driven experience for football enthusiasts and analysts. Leveraging machine learning models and historical data from the English Premier League, this app offers in-depth insights into team performance, player analytics, head-to-head statistics, and match predictions.
+
+In the **League Overview tab**, you’ll find a summary of league-wide statistics, including goal trends, team goal distributions, and a heatmap showcasing goals scored between teams. These visualizations give you a bird’s-eye view of the league’s dynamics and key highlights.
+
+Whether you're a fan seeking insights into your favorite team, a data enthusiast exploring trends, or someone looking for reliable match predictions, this app serves as a powerful tool to enhance your understanding of the beautiful game.
+""")
+
     # Add information about the English Premier League
     st.markdown(
         """
