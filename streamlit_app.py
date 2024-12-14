@@ -25,8 +25,8 @@ def load_model():
 # Helper Function: Load Base64 Encoded Image
 # Helper Function: Load Base64 Encoded Image
 # Helper Function: Load Base64 Encoded Image
-def get_base64(file_path):
-    with open(file_path, "rb") as f:
+def get_base64(pl_logo.jpg):
+    with open(pl_logo.jpg, "rb") as f:
         return base64.b64encode(f.read()).decode()
 # Set Background Image
 def set_background(image_file):
