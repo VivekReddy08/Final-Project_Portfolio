@@ -96,6 +96,30 @@ def customize_tab_styles():
         """,
         unsafe_allow_html=True
     )
+def style_table():
+    st.markdown(
+        """
+        <style>
+        table {
+            background-color: white;
+            color: black;
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 # Enhanced Visualizations
@@ -193,14 +217,11 @@ def plot_team_overview(data, team):
 def plot_player_analytics(data, team):
     try:
         st.subheader(f"Player Analytics for {team}")
+        
+        # Apply table styling
+        style_table()
 
-        # Filter data for the selected team
-        team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
-        if team_data.empty:
-            st.warning(f"No data available for the selected team: {team}")
-            return
-
-        # Simulate player data (replace with actual dataset logic)
+        # Simulated player data
         player_stats = {
             "Player": ["Player A", "Player B", "Player C", "Player D"],
             "Goals": [10, 8, 7, 5],
@@ -209,7 +230,7 @@ def plot_player_analytics(data, team):
         }
         player_df = pd.DataFrame(player_stats)
 
-        # Display player table
+        # Render the styled table
         st.table(player_df)
 
         # Plot Goals + Assists
@@ -224,6 +245,7 @@ def plot_player_analytics(data, team):
     except Exception as e:
         logging.error(f"Error in plot_player_analytics: {e}")
         st.error("Failed to generate player analytics.")
+
 
 def league_prediction(data):
     try:
