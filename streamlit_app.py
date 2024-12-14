@@ -187,29 +187,50 @@ def league_prediction(data):
 # Corrected Head-to-Head Results Display
 def display_h2h_results(data, team1, team2):
     try:
-        h2h_data = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
-                        ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
+        # Filter head-to-head data
+        h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
+                   ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
 
-        if h2h_data.empty:
-            st.warning(f"No matches found between {team1} and {team2}.")
+        if h2h.empty:
+            st.warning(f"No head-to-head data available between {team1} and {team2}")
             return
 
-        # Display match summary
-        st.write(f"### Head-to-Head Results: {team1} vs {team2}")
-        st.dataframe(h2h_data[['Date', 'HomeTeam', 'AwayTeam', 'FTHG', 'FTAG', 'FTR']])
+        # Head-to-Head stats
+        team1_wins = len(h2h[h2h['FTR'] == 'H'])
+        team2_wins = len(h2h[h2h['FTR'] == 'A'])
+        draws = len(h2h[h2h['FTR'] == 'D'])
+        total_matches = len(h2h)
 
-        # Count results
-        team1_wins = len(h2h_data[h2h_data['FTR'] == 'H'])
-        team2_wins = len(h2h_data[h2h_data['FTR'] == 'A'])
-        draws = len(h2h_data[h2h_data['FTR'] == 'D'])
+        # Average Goals
+        avg_goals_team1 = h2h[h2h['HomeTeam'] == team1]['FTHG'].mean() + h2h[h2h['AwayTeam'] == team1]['FTAG'].mean()
+        avg_goals_team2 = h2h[h2h['HomeTeam'] == team2]['FTHG'].mean() + h2h[h2h['AwayTeam'] == team2]['FTAG'].mean()
 
+        # Win probabilities
+        team1_win_prob = (team1_wins / total_matches) * 100 if total_matches > 0 else 0
+        team2_win_prob = (team2_wins / total_matches) * 100 if total_matches > 0 else 0
+        draw_prob = (draws / total_matches) * 100 if total_matches > 0 else 0
+
+        # Display Insights
+        st.subheader(f"Head-to-Head Insights: {team1} vs. {team2}")
+        st.write(f"**Total Matches Played:** {total_matches}")
         st.write(f"**{team1} Wins:** {team1_wins}")
         st.write(f"**{team2} Wins:** {team2_wins}")
         st.write(f"**Draws:** {draws}")
 
+        st.write(f"**Average Goals Scored by {team1}:** {avg_goals_team1:.2f}")
+        st.write(f"**Average Goals Scored by {team2}:** {avg_goals_team2:.2f}")
+
+        # Display Win Probability as a pie chart
+        labels = [f"{team1} Win", f"{team2} Win", "Draw"]
+        probabilities = [team1_win_prob, team2_win_prob, draw_prob]
+        plt.figure(figsize=(6, 6))
+        plt.pie(probabilities, labels=labels, autopct='%1.1f%%', startangle=140, colors=['#ff9999', '#66b3ff', '#99ff99'])
+        plt.title("Win Probability")
+        st.pyplot(plt)
+
     except Exception as e:
         logging.error(f"Error in display_h2h_results: {e}")
-        st.error("Error displaying head-to-head results.")
+        st.error("Error generating head-to-head insights.")
 
 # Enhanced Match Prediction Tab
 def enhanced_match_prediction(data):
@@ -285,11 +306,11 @@ def app():
         selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
         plot_goal_distribution(combined_data)
 
-    with tab3:
-        st.header("Head-to-Head")
-        team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
-        team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1], key="h2h_team2")
-        display_h2h_results(combined_data, team1, team2)
+   with tab3:
+    st.header("Head-to-Head")
+    team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
+    team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1], key="h2h_team2")
+    display_h2h_results(combined_data, team1, team2)
 
     with tab4:
         st.header("Match Prediction")
