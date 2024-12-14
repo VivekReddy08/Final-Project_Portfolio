@@ -133,6 +133,38 @@ def plot_goal_distribution(data):
     except Exception as e:
         logging.error(f"Error in plot_goal_distribution: {e}")
         st.error(f"Error generating goal distribution: {e}")
+def plot_team_overview(data, team):
+    try:
+        st.subheader(f"Team Overview for {team}")
+
+        # Filter team data
+        team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
+
+        # Total matches, wins, losses, and draws
+        total_matches = len(team_data)
+        wins = len(team_data[(team_data['HomeTeam'] == team) & (team_data['FTR'] == 'H')]) + \
+               len(team_data[(team_data['AwayTeam'] == team) & (team_data['FTR'] == 'A')])
+        losses = len(team_data[(team_data['HomeTeam'] == team) & (team_data['FTR'] == 'A')]) + \
+                 len(team_data[(team_data['AwayTeam'] == team) & (team_data['FTR'] == 'H')])
+        draws = len(team_data[team_data['FTR'] == 'D'])
+
+        st.write(f"**Total Matches:** {total_matches}")
+        st.write(f"**Wins:** {wins}")
+        st.write(f"**Losses:** {losses}")
+        st.write(f"**Draws:** {draws}")
+
+        # Win/Loss/Draw distribution pie chart
+        labels = ['Wins', 'Losses', 'Draws']
+        sizes = [wins, losses, draws]
+        colors = ['green', 'red', 'gray']
+        plt.figure(figsize=(6, 6))
+        plt.pie(sizes, labels=labels, autopct='%1.1f%%', colors=colors, startangle=140)
+        plt.title("Win/Loss/Draw Distribution")
+        st.pyplot(plt)
+    except Exception as e:
+        logging.error(f"Error in plot_team_overview: {e}")
+        st.error("Failed to generate team overview.")
+
 def plot_player_analytics(data, team):
     try:
         st.subheader(f"Player Analytics for {team}")
