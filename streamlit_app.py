@@ -263,12 +263,33 @@ def enhanced_match_prediction(data):
         team2_win_prob = (team2_wins / total_matches) * 100
         draw_prob = (draws / total_matches) * 100
 
+        # Additional Stats
+        avg_goals_team1 = h2h_matches[h2h_matches['HomeTeam'] == team1]['FTHG'].mean() + \
+                          h2h_matches[h2h_matches['AwayTeam'] == team1]['FTAG'].mean()
+        avg_goals_team2 = h2h_matches[h2h_matches['HomeTeam'] == team2]['FTHG'].mean() + \
+                          h2h_matches[h2h_matches['AwayTeam'] == team2]['FTAG'].mean()
+
+        clean_sheets_team1 = len(h2h_matches[(h2h_matches['HomeTeam'] == team1) & (h2h_matches['FTAG'] == 0)]) + \
+                             len(h2h_matches[(h2h_matches['AwayTeam'] == team1) & (h2h_matches['FTHG'] == 0)])
+        clean_sheets_team2 = len(h2h_matches[(h2h_matches['HomeTeam'] == team2) & (h2h_matches['FTAG'] == 0)]) + \
+                             len(h2h_matches[(h2h_matches['AwayTeam'] == team2) & (h2h_matches['FTHG'] == 0)])
+
+        most_common_scoreline = h2h_matches.groupby(['FTHG', 'FTAG']).size().idxmax()
+
         # Display Insights
         st.write(f"### Match Insights: {team1} vs {team2}")
         st.write(f"**Total Matches:** {total_matches}")
         st.write(f"**{team1} Wins:** {team1_wins} ({team1_win_prob:.2f}%)")
         st.write(f"**{team2} Wins:** {team2_wins} ({team2_win_prob:.2f}%)")
         st.write(f"**Draws:** {draws} ({draw_prob:.2f}%)")
+
+        st.write(f"**Average Goals Scored by {team1}:** {avg_goals_team1:.2f}")
+        st.write(f"**Average Goals Scored by {team2}:** {avg_goals_team2:.2f}")
+
+        st.write(f"**Clean Sheets by {team1}:** {clean_sheets_team1}")
+        st.write(f"**Clean Sheets by {team2}:** {clean_sheets_team2}")
+
+        st.write(f"**Most Common Scoreline:** {most_common_scoreline[0]}-{most_common_scoreline[1]}")
 
         # Predicted Winner
         if team1_win_prob > team2_win_prob:
