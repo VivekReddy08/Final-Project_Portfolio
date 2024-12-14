@@ -23,29 +23,39 @@ def load_model():
     return joblib.load("ensemble_model.pkl")
 
 # Helper Function: Load Base64 Encoded Image
-def set_background(pl_logo):
-    image_base64 = get_base64(pl_logo)  # Encode the image in base64
+def get_base64(file_path):
+    with open(file_path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+# Set Background Image with Gradient
+def set_background(image_file):
+    base64_image = get_base64(image_file)
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background: url(data:pl_logo;base64,{image_base64});
+            background: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9)), 
+            url(data:image/jpg;base64,{base64_image});
             background-size: cover;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            background-position: center;
-            color: white;
-        }}
-        h1, h2, h3, h4, h5, h6 {{
-            color: white;
-        }}
-        p {{
             color: white;
         }}
         </style>
         """,
         unsafe_allow_html=True
     )
+
+# App Layout with Background Setup
+def app():
+    # Set background image
+    set_background("pl_logo.jpg")  # Ensure pl_logo.jpg is in the same directory as this script
+
+    # App content starts here
+    st.title("AI-Powered Football Match Outcome Predictor")
+    st.write("Welcome to the football analytics dashboard powered by Streamlit!")
+    # Add your app's functionality below...
+
+if __name__ == "__main__":
+    app()
 
 
 
