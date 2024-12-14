@@ -182,6 +182,19 @@ def plot_player_analytics(data, team):
         logging.error(f"Error in plot_player_analytics: {e}")
         st.error("Failed to generate player analytics.")
 
+try:
+    plot_team_overview(combined_data, selected_team)
+except Exception as e:
+    logging.error(f"Error in plot_team_overview: {e}")
+    st.error(f"Failed to generate Team Overview: {e}")
+
+try:
+    plot_player_analytics(combined_data, selected_team)
+except Exception as e:
+    logging.error(f"Error in plot_player_analytics: {e}")
+    st.error(f"Failed to generate Player Analytics: {e}")
+
+
 def league_prediction(data):
     try:
         st.subheader("League Performance Prediction")
@@ -404,11 +417,12 @@ if __name__ == "__main__":
      plot_goals_trend(combined_data)
      plot_goal_distribution(combined_data)
 
- with tab2:
-     st.header("Team Performance")
-     selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
-     plot_team_overview(combined_data, selected_team)
-     plot_player_analytics(combined_data, selected_team
+    with tab2:
+        st.header("Team Performance")
+        selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
+        plot_team_overview(combined_data, selected_team)
+        plot_player_analytics(combined_data, selected_team)
+
     with tab3:
         st.header("Head-to-Head")
         team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
