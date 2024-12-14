@@ -402,15 +402,22 @@ def enhanced_match_prediction(data):
 # App Layout with Tabs
 
 if __name__ == "__main__":
-    # Load Images
-    background_image = get_base64("pl_logo.jpg")  # Replace with your logo
-    set_background(background_image)
+    set_background_color()
+
     st.title("AI-Powered Football Match Outcome Predictor")
-    
-    # Load data
+
+    # Load the data
     combined_data, filtered_data = load_data()
     
-    # Tabs for different sections
+    # Check if the data is loaded properly
+    if combined_data is None or filtered_data is None:
+        st.error("Data failed to load. Please check the CSV file paths.")
+        st.stop()  # Stop further execution if data is not loaded
+
+    # Debugging: Print sample of the data
+    st.write("Debug: Combined Data Loaded")
+    st.write(combined_data.head())
+
     tab1, tab2, tab3, tab4 = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
 
     with tab1:
@@ -418,13 +425,11 @@ if __name__ == "__main__":
         plot_heatmap(combined_data)
         plot_goals_trend(combined_data)
         plot_goal_distribution(combined_data)
-
     with tab2:
         st.header("Team Performance")
         selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
         plot_team_overview(combined_data, selected_team)
         plot_player_analytics(combined_data, selected_team)
-
     with tab3:
         st.header("Head-to-Head")
         team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
