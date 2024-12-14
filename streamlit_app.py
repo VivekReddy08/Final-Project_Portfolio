@@ -56,7 +56,6 @@ def plot_goals_heatmap(data):
         logging.error(f"Error in plot_goals_heatmap: {e}")
         st.error(f"Error generating heatmap: {e}")
 
-
 def plot_avg_goals_trend(data):
     try:
         data['MatchDate'] = pd.to_datetime(data['Date'])
