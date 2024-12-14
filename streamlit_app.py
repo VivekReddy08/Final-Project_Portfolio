@@ -184,71 +184,91 @@ def league_prediction(data):
         logging.error(f"Error in league_prediction: {e}")
         st.error(f"Error generating league predictions: {e}")
 
+# Corrected Head-to-Head Results Display
+def display_h2h_results(data, team1, team2):
+    try:
+        h2h_data = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
+                        ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
+
+        if h2h_data.empty:
+            st.warning(f"No matches found between {team1} and {team2}.")
+            return
+
+        # Display match summary
+        st.write(f"### Head-to-Head Results: {team1} vs {team2}")
+        st.dataframe(h2h_data[['Date', 'HomeTeam', 'AwayTeam', 'FTHG', 'FTAG', 'FTR']])
+
+        # Count results
+        team1_wins = len(h2h_data[h2h_data['FTR'] == 'H'])
+        team2_wins = len(h2h_data[h2h_data['FTR'] == 'A'])
+        draws = len(h2h_data[h2h_data['FTR'] == 'D'])
+
+        st.write(f"**{team1} Wins:** {team1_wins}")
+        st.write(f"**{team2} Wins:** {team2_wins}")
+        st.write(f"**Draws:** {draws}")
+
+    except Exception as e:
+        logging.error(f"Error in display_h2h_results: {e}")
+        st.error("Error displaying head-to-head results.")
+
+# Enhanced Match Prediction Tab
 def enhanced_match_prediction(data):
-    st.subheader("Enhanced Match Prediction Insights")
+    try:
+        st.subheader("Enhanced Match Prediction Insights")
 
-    # Team Selection
-    team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique(), key="enhanced_team1")
-    team2 = st.selectbox("Select Team 2", [t for t in data['AwayTeam'].unique() if t != team1], key="enhanced_team2")
+        # Team Selection
+        team1 = st.selectbox("Select Team 1", data['HomeTeam'].unique(), key="match_team1")
+        team2 = st.selectbox("Select Team 2", [t for t in data['AwayTeam'].unique() if t != team1], key="match_team2")
 
-    # Filter Data
-    team1_home = data[data['HomeTeam'] == team1]
-    team2_away = data[data['AwayTeam'] == team2]
-    h2h_matches = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
-                       ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
+        if team1 == team2:
+            st.warning("Select two different teams for comparison.")
+            return
 
-    if h2h_matches.empty:
-        st.warning(f"No head-to-head data available between {team1} and {team2}.")
-        return
+        # Filter Data
+        h2h_matches = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
+                           ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
 
-    # Calculate Statistics
-    team1_avg_goals_home = team1_home['FTHG'].mean()
-    team2_avg_goals_away = team2_away['FTAG'].mean()
+        if h2h_matches.empty:
+            st.warning(f"No head-to-head data available between {team1} and {team2}.")
+            return
 
-    team1_wins = len(h2h_matches[h2h_matches['FTR'] == 'H'])
-    team2_wins = len(h2h_matches[h2h_matches['FTR'] == 'A'])
-    draws = len(h2h_matches[h2h_matches['FTR'] == 'D'])
+        # Calculate Statistics
+        team1_wins = len(h2h_matches[h2h_matches['FTR'] == 'H'])
+        team2_wins = len(h2h_matches[h2h_matches['FTR'] == 'A'])
+        draws = len(h2h_matches[h2h_matches['FTR'] == 'D'])
+        total_matches = len(h2h_matches)
 
-    # Total Matches
-    total_matches = len(h2h_matches)
+        # Probabilities
+        team1_win_prob = (team1_wins / total_matches) * 100
+        team2_win_prob = (team2_wins / total_matches) * 100
+        draw_prob = (draws / total_matches) * 100
 
-    # Probabilities
-    team1_win_prob = (team1_wins / total_matches) * 100
-    team2_win_prob = (team2_wins / total_matches) * 100
-    draw_prob = (draws / total_matches) * 100
+        # Display Insights
+        st.write(f"### Match Insights: {team1} vs {team2}")
+        st.write(f"**Total Matches:** {total_matches}")
+        st.write(f"**{team1} Wins:** {team1_wins} ({team1_win_prob:.2f}%)")
+        st.write(f"**{team2} Wins:** {team2_wins} ({team2_win_prob:.2f}%)")
+        st.write(f"**Draws:** {draws} ({draw_prob:.2f}%)")
 
-    # Insights Table
-    insights_df = pd.DataFrame({
-        "Metric": ["Avg Goals Scored (Home)", "Avg Goals Scored (Away)", "Total Matches", "Team 1 Wins", "Team 2 Wins", "Draws"],
-        team1: [team1_avg_goals_home, "-", total_matches, team1_wins, "-", "-"],
-        team2: ["-", team2_avg_goals_away, "-", "-", team2_wins, draws]
-    })
+        # Predicted Winner
+        if team1_win_prob > team2_win_prob:
+            st.success(f"Predicted Winner: {team1}")
+        elif team2_win_prob > team1_win_prob:
+            st.success(f"Predicted Winner: {team2}")
+        else:
+            st.info("It's likely to be a draw!")
 
-    st.write("### Head-to-Head Insights")
-    st.table(insights_df)
-
-    # Probabilities
-    st.write("### Win Probability")
-    st.write(f"**{team1} Win Probability:** {team1_win_prob:.2f}%")
-    st.write(f"**{team2} Win Probability:** {team2_win_prob:.2f}%")
-    st.write(f"**Draw Probability:** {draw_prob:.2f}%")
-
-    # Predicted Winner
-    if team1_win_prob > team2_win_prob:
-        st.success(f"Predicted Winner: {team1}")
-    elif team2_win_prob > team1_win_prob:
-        st.success(f"Predicted Winner: {team2}")
-    else:
-        st.info("It's likely to be a draw!")
+    except Exception as e:
+        logging.error(f"Error in enhanced_match_prediction: {e}")
+        st.error("Error generating match predictions.")
 
 # App Layout with Tabs
 def app():
-    # Set Background Image
     background_image = get_base64("pl_logo.jpg")
     set_background(background_image)
-
-    # Title and Data Loading
     st.title("AI-Powered Football Match Outcome Predictor")
+
+    # Load Data
     combined_data, filtered_data = load_data()
 
     # Tabs
@@ -269,10 +289,7 @@ def app():
         st.header("Head-to-Head")
         team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
         team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1], key="h2h_team2")
-        
-        # Display Goals and Results
         display_h2h_results(combined_data, team1, team2)
-        display_goals_distribution(combined_data, team1, team2)
 
     with tab4:
         st.header("Match Prediction")
