@@ -418,10 +418,12 @@ if __name__ == "__main__":
      plot_goal_distribution(combined_data)
 
     with tab2:
+        st.write("Debug: Entered Team Performance tab")
         st.header("Team Performance")
         selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
         plot_team_overview(combined_data, selected_team)
         plot_player_analytics(combined_data, selected_team)
+
 
     with tab3:
         st.header("Head-to-Head")
