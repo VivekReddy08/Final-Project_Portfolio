@@ -31,8 +31,8 @@ if combined_data is None or filtered_data is None:
     st.error("Data failed to load. Please check the CSV file paths.")
     st.stop()
 # Debugging: Preview the data
-st.write("Debug: Combined Data Loaded")
-st.write(combined_data.head())
+#st.write("Debug: Combined Data Loaded")
+#st.write(combined_data.head())
 
 # Debugging: Check if required columns exist
 required_columns = ['HomeTeam', 'AwayTeam', 'FTHG', 'FTAG', 'FTR']
