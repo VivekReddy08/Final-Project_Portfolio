@@ -405,14 +405,17 @@ if __name__ == "__main__":
         plot_goal_distribution(combined_data)
 
     with tab2:
-    st.header("Team Performance")
-    selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
+        st.header("Team Performance")
 
-    st.subheader("Team Overview")
-    plot_team_overview(combined_data, selected_team)
+        # Select a team
+        selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
 
-    st.subheader("Player Analytics")
-    plot_player_analytics(combined_data, selected_team)
+        # Display Team Overview
+        plot_team_overview(combined_data, selected_team)
+
+        # Display Player Analytics
+        plot_player_analytics(combined_data, selected_team)
+
 
 
     with tab3:
