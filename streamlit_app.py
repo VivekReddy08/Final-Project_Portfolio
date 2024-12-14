@@ -236,44 +236,51 @@ def match_winner_predictor(data):
        
 # Display Goals Distribution in a Table
 def display_goals_distribution(data, team1, team2):
+    # Filter head-to-head matches
     h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
                ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
 
+    # Check if there's any data to display
     if h2h.empty:
         st.warning(f"No match data available between {team1} and {team2}.")
-        return
+    else:
+        # Extract goals scored by each team
+        goals_home = h2h['FTHG'].tolist()
+        goals_away = h2h['FTAG'].tolist()
 
-    goals_home = h2h['FTHG'].tolist()
-    goals_away = h2h['FTAG'].tolist()
+        # Create a DataFrame to display goals
+        goals_data = pd.DataFrame({
+            f"{team1} Goals (Home)": goals_home,
+            f"{team2} Goals (Away)": goals_away
+        })
 
-    goals_data = pd.DataFrame({
-        f"{team1} Goals (Home)": goals_home,
-        f"{team2} Goals (Away)": goals_away
-    })
+        st.subheader(f"Goals Distribution Between {team1} and {team2}")
+        st.write(goals_data)
 
-    st.subheader(f"Goals Distribution Between {team1} and {team2}")
-    st.write(goals_data)
 
 # Display Head-to-Head Results in a Table
 def display_h2h_results(data, team1, team2):
+    # Filter head-to-head matches
     h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
                ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
 
+    # Calculate results
     team1_wins = len(h2h[h2h['FTR'] == 'H'])
     team2_wins = len(h2h[h2h['FTR'] == 'A'])
     draws = len(h2h[h2h['FTR'] == 'D'])
 
+    # Check if there's any data to display
     if team1_wins == 0 and team2_wins == 0 and draws == 0:
         st.warning(f"No head-to-head match data available between {team1} and {team2}.")
-        return
+    else:
+        # Create a DataFrame to display results
+        results_data = pd.DataFrame({
+            "Result": ["Team 1 Wins", "Team 2 Wins", "Draws"],
+            "Count": [team1_wins, team2_wins, draws]
+        })
 
-    results_data = pd.DataFrame({
-        "Result": ["Team 1 Wins", "Team 2 Wins", "Draws"],
-        "Count": [team1_wins, team2_wins, draws]
-    })
-
-    st.subheader(f"Head-to-Head Results Between {team1} and {team2}")
-    st.write(results_data)
+        st.subheader(f"Head-to-Head Results Between {team1} and {team2}")
+        st.write(results_data)
 
 # App Layout with Tabs
 def app():
@@ -315,6 +322,7 @@ def app():
 
 if __name__ == "__main__":
     app()
+
 
 
 
