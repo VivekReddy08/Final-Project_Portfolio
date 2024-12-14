@@ -18,24 +18,20 @@ else:
 logging.basicConfig(level=logging.ERROR)
 
 # Load Data
-@st.cache_data
-def load_data():
-    try:
-        combined_data = pd.read_csv("combined_data.csv")
-        filtered_data = pd.read_csv("filtered_data.csv")
+if combined_data is None or filtered_data is None:
+    st.error("Data failed to load. Please check the CSV file paths.")
+    st.stop()
 
-        # Validate columns
-        required_columns = ['HomeTeam', 'AwayTeam', 'FTHG', 'FTAG', 'FTR']
-        missing_columns = [col for col in required_columns if col not in combined_data.columns]
-        if missing_columns:
-            st.error(f"The following required columns are missing: {missing_columns}")
-            return None, None
+# Debugging: Check data structure
+st.write("Debug: Combined Data Loaded")
+st.write(combined_data.head())
 
-        return combined_data, filtered_data
-    except Exception as e:
-        logging.error(f"Error loading data: {e}")
-        st.error("Failed to load data. Please check the file paths.")
-        return None, None
+# Check required columns
+required_columns = ['HomeTeam', 'AwayTeam', 'FTHG', 'FTAG', 'FTR']
+missing_columns = [col for col in required_columns if col not in combined_data.columns]
+if missing_columns:
+    st.error(f"The dataset is missing the following columns: {missing_columns}")
+    st.stop()
 
 # Debugging: Preview the data
 st.write("Debug: Combined Data Loaded")
@@ -140,41 +136,32 @@ def plot_goal_distribution(data):
     except Exception as e:
         logging.error(f"Error in plot_goal_distribution: {e}")
         st.error(f"Error generating goal distribution: {e}")
-def plot_team_overview(data, team):
-    try:
-        st.subheader(f"Team Overview for {team}")
+with tab2:
+    st.header("Team Performance")
 
-        # Filter team data
-        team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
-        if team_data.empty:
-            st.warning(f"No data available for the selected team: {team}")
-            return
+    # Debugging: Preview combined data
+    st.write("Debug: Combined Data Loaded")
+    st.write(combined_data.head())
 
-        # Total matches, wins, losses, and draws
-        total_matches = len(team_data)
-        wins = len(team_data[(team_data['HomeTeam'] == team) & (team_data['FTR'] == 'H')]) + \
-               len(team_data[(team_data['AwayTeam'] == team) & (team_data['FTR'] == 'A')])
-        losses = len(team_data[(team_data['HomeTeam'] == team) & (team_data['FTR'] == 'A')]) + \
-                 len(team_data[(team_data['AwayTeam'] == team) & (team_data['FTR'] == 'H')])
-        draws = len(team_data[team_data['FTR'] == 'D'])
+    # Select a team
+    selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
 
-        # Display overview
-        st.write(f"**Total Matches:** {total_matches}")
-        st.write(f"**Wins:** {wins}")
-        st.write(f"**Losses:** {losses}")
-        st.write(f"**Draws:** {draws}")
+    # Ensure the selected team exists
+    if selected_team:
+        try:
+            plot_team_overview(combined_data, selected_team)
+        except Exception as e:
+            st.error(f"Error in plot_team_overview: {e}")
+            st.stop()
 
-        # Win/Loss/Draw distribution pie chart
-        labels = ['Wins', 'Losses', 'Draws']
-        sizes = [wins, losses, draws]
-        colors = ['green', 'red', 'gray']
-        plt.figure(figsize=(6, 6))
-        plt.pie(sizes, labels=labels, autopct='%1.1f%%', colors=colors, startangle=140)
-        plt.title("Win/Loss/Draw Distribution")
-        st.pyplot(plt)
-    except Exception as e:
-        logging.error(f"Error in plot_team_overview: {e}")
-        st.error("Failed to generate team overview.")
+        try:
+            plot_player_analytics(combined_data, selected_team)
+        except Exception as e:
+            st.error(f"Error in plot_player_analytics: {e}")
+            st.stop()
+    else:
+        st.warning("Please select a valid team.")
+
 def plot_player_analytics(data, team):
     try:
         st.subheader(f"Player Analytics for {team}")
@@ -435,20 +422,29 @@ if __name__ == "__main__":
     with tab2:
     st.header("Team Performance")
 
+    # Debugging: Preview combined data
+    st.write("Debug: Combined Data Loaded")
+    st.write(combined_data.head())
+
     # Select a team
     selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
+
+    # Ensure the selected team exists
     if selected_team:
         try:
             plot_team_overview(combined_data, selected_team)
         except Exception as e:
             st.error(f"Error in plot_team_overview: {e}")
+            st.stop()
 
         try:
             plot_player_analytics(combined_data, selected_team)
         except Exception as e:
             st.error(f"Error in plot_player_analytics: {e}")
+            st.stop()
     else:
         st.warning("Please select a valid team.")
+
 
 
 
