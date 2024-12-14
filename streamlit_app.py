@@ -234,7 +234,7 @@ def match_winner_predictor(data):
             st.error("Error generating win probability pie chart.")
 
        
-        # Improved Goals Distribution Histogram
+# Improved Goals Distribution Histogram
 def plot_goals_distribution(data, team1, team2):
     try:
         h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
@@ -258,8 +258,7 @@ def plot_goals_distribution(data, team1, team2):
         logging.error(f"Error in Goals Distribution Histogram: {e}")
         st.error("Error generating goals distribution histogram.")
 
-
-        # Improved Head-to-Head Result Bar Chart
+# Improved Head-to-Head Result Bar Chart
 def plot_h2h_results_chart(data, team1, team2):
     try:
         h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
@@ -280,6 +279,12 @@ def plot_h2h_results_chart(data, team1, team2):
         for bar in bars:
             plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), f'{int(bar.get_height())}', 
                      ha='center', va='bottom', fontsize=10, color="white")
+
+        st.pyplot(plt)
+    except Exception as e:
+        logging.error(f"Error in Head-to-Head Result Bar Chart: {e}")
+        st.error("Error generating head-to-head result bar chart.")
+
 
         st.pyplot(plt)
     except Exception as e:
