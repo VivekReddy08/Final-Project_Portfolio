@@ -28,19 +28,14 @@ def load_model():
 def get_base64(file_path):
     with open(file_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
-
 # Set Background Image
 def set_background(image_file):
-    base64_image = get_base64(image_file)
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background-image: url("data:image/jpg;base64,{base64_image}");
+            background: url(data:image/png;base64,{image_file});
             background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
             color: white;
         }}
         </style>
@@ -329,9 +324,10 @@ def enhanced_match_prediction(data):
 # App Layout with Tabs
 
 if __name__ == "__main__":
-    # Set the background image
-    set_background("pl_logo.jpg")  # Make sure the file is in the same directory
-
+    # Load Images
+    background_image = get_base64("pl_logo.jpg")  # Replace with your logo
+    set_background(background_image)
+    st.title("AI-Powered Football Match Outcome Predictor")
     
     # Load data
     combined_data, filtered_data = load_data()
