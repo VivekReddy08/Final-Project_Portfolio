@@ -116,6 +116,65 @@ def plot_goal_distribution(data):
     except Exception as e:
         logging.error(f"Error in plot_goal_distribution: {e}")
         st.error(f"Error generating goal distribution: {e}")
+def plot_team_overview(data, team):
+    try:
+        st.subheader(f"Team Overview for {team}")
+
+        # Filter team data
+        team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
+
+        # Total matches, wins, losses, and draws
+        total_matches = len(team_data)
+        wins = len(team_data[(team_data['HomeTeam'] == team) & (team_data['FTR'] == 'H')]) + \
+               len(team_data[(team_data['AwayTeam'] == team) & (team_data['FTR'] == 'A')])
+        losses = len(team_data[(team_data['HomeTeam'] == team) & (team_data['FTR'] == 'A')]) + \
+                 len(team_data[(team_data['AwayTeam'] == team) & (team_data['FTR'] == 'H')])
+        draws = len(team_data[team_data['FTR'] == 'D'])
+
+        st.write(f"**Total Matches:** {total_matches}")
+        st.write(f"**Wins:** {wins}")
+        st.write(f"**Losses:** {losses}")
+        st.write(f"**Draws:** {draws}")
+
+        # Win/Loss/Draw distribution pie chart
+        labels = ['Wins', 'Losses', 'Draws']
+        sizes = [wins, losses, draws]
+        colors = ['green', 'red', 'gray']
+        plt.figure(figsize=(6, 6))
+        plt.pie(sizes, labels=labels, autopct='%1.1f%%', colors=colors, startangle=140)
+        plt.title("Win/Loss/Draw Distribution")
+        st.pyplot(plt)
+    except Exception as e:
+        logging.error(f"Error in plot_team_overview: {e}")
+        st.error("Failed to generate team overview.")
+def plot_player_analytics(data, team):
+    try:
+        st.subheader(f"Player Analytics for {team}")
+
+        team_data = data[(data['HomeTeam'] == team) | (data['AwayTeam'] == team)]
+
+        # Simulating player data (modify based on your actual dataset)
+        player_stats = {
+            "Player": ["Player A", "Player B", "Player C", "Player D"],
+            "Goals": [10, 8, 7, 5],
+            "Assists": [5, 3, 4, 2],
+            "Matches Played": [15, 14, 13, 12]
+        }
+        player_df = pd.DataFrame(player_stats)
+
+        st.table(player_df)
+
+        plt.figure(figsize=(8, 6))
+        plt.bar(player_df['Player'], player_df['Goals'], color="blue", label="Goals")
+        plt.bar(player_df['Player'], player_df['Assists'], bottom=player_df['Goals'], color="orange", label="Assists")
+        plt.title("Player Performance (Goals + Assists)")
+        plt.xlabel("Player")
+        plt.ylabel("Count")
+        plt.legend()
+        st.pyplot(plt)
+    except Exception as e:
+        logging.error(f"Error in plot_player_analytics: {e}")
+        st.error("Failed to generate player analytics.")
 
 def league_prediction(data):
     try:
@@ -342,7 +401,8 @@ if __name__ == "__main__":
     with tab2:
         st.header("Team Performance")
         selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
-        plot_goal_distribution(combined_data)
+        plot_team_overview(combined_data, selected_team)
+        plot_player_analytics(combined_data, selected_team)
 
     with tab3:
         st.header("Head-to-Head")
