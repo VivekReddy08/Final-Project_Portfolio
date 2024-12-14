@@ -72,6 +72,31 @@ def set_background_color():
     except Exception as e:
         logging.error(f"Error in set_background_color: {e}")
         st.error("Failed to apply background color.")
+def customize_tab_styles():
+    st.markdown(
+        """
+        <style>
+        div[role="tablist"] > button[aria-selected="true"] {
+            background-color: red; /* Selected tab color */
+            color: white; /* Selected tab text color */
+            font-weight: bold;
+        }
+        div[role="tablist"] > button[aria-selected="false"] {
+            background-color: white; /* Non-selected tab color */
+            color: black; /* Non-selected tab text color */
+            font-weight: normal;
+        }
+        div[role="tablist"] > button {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 0 2px;
+            padding: 8px 16px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
 
 # Enhanced Visualizations
 def plot_goals_heatmap(data):
@@ -406,6 +431,7 @@ def enhanced_match_prediction(data):
 
 if __name__ == "__main__":
     set_background_color()
+    customize_tab_styles()
 
     st.title("AI-Powered Football Match Outcome Predictor")
 
