@@ -133,32 +133,6 @@ def plot_goal_distribution(data):
     except Exception as e:
         logging.error(f"Error in plot_goal_distribution: {e}")
         st.error(f"Error generating goal distribution: {e}")
-with tab2:
-    st.header("Team Performance")
-
-    # Debugging: Preview combined data
-    st.write("Debug: Combined Data Loaded")
-    st.write(combined_data.head())
-
-    # Select a team
-    selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
-
-    # Ensure the selected team exists
-    if selected_team:
-        try:
-            plot_team_overview(combined_data, selected_team)
-        except Exception as e:
-            st.error(f"Error in plot_team_overview: {e}")
-            st.stop()
-
-        try:
-            plot_player_analytics(combined_data, selected_team)
-        except Exception as e:
-            st.error(f"Error in plot_player_analytics: {e}")
-            st.stop()
-    else:
-        st.warning("Please select a valid team.")
-
 def plot_player_analytics(data, team):
     try:
         st.subheader(f"Player Analytics for {team}")
