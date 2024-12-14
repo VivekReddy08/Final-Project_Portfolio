@@ -399,20 +399,16 @@ if __name__ == "__main__":
     tab1, tab2, tab3, tab4 = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
 
     with tab1:
-        st.header("League Overview")
-        plot_goals_heatmap(combined_data)
-        plot_avg_goals_trend(combined_data)
-        plot_goal_distribution(combined_data)
+     st.header("League Overview")
+     plot_heatmap(combined_data)
+     plot_goals_trend(combined_data)
+     plot_goal_distribution(combined_data)
 
-     with tab2:
-        st.header("Team Performance")
-        # Select a team
-        selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
-        # Display Team Overview
-        plot_team_overview(combined_data, selected_team)
-        # Display Player Analytics
-        st.subheader("Player Analytics")
-        plot_player_analytics(combined_data, selected_team)
+ with tab2:
+     st.header("Team Performance")
+     selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
+     plot_team_overview(combined_data, selected_team)
+     plot_player_analytics(combined_data, selected_team
     with tab3:
         st.header("Head-to-Head")
         team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
