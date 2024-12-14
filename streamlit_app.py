@@ -496,6 +496,17 @@ Whether you're a fan seeking insights into your favorite team, a data enthusiast
 
 with tab2:
     st.header("Team Performance")
+    st.markdown("""
+The **Team Performance** tab provides a detailed breakdown of a selected team's performance in the league. 
+You can explore metrics such as wins, losses, draws, and a visualization of the team's match results 
+distribution. Player analytics for the selected team are also available, showing key statistics like goals, 
+assists, and matches played for the top performers.
+
+Use this tab to gain a deeper understanding of how your favorite team or rivals have performed over the 
+season. From individual contributions to team-level metrics, this tab gives you the insights you need 
+to analyze performance trends.
+""")
+
     selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
     if selected_team:
         plot_team_overview(combined_data, selected_team)
@@ -503,6 +514,15 @@ with tab2:
 
 with tab3:
     st.header("Head-to-Head")
+    st.markdown("""
+The **Head-to-Head** tab allows you to analyze the historical matchups between two teams. Select two teams to 
+see their head-to-head results, win probabilities, and average goals scored. A pie chart visually represents 
+the distribution of wins, losses, and draws between the two teams.
+
+Whether you're comparing rivals or trying to predict the outcome of an upcoming game, this tab provides the 
+necessary insights to understand the dynamics between two teams.
+""")
+
     team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
     team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1], key="h2h_team2")
     if team1 and team2:
@@ -510,6 +530,15 @@ with tab3:
 
 with tab4:
     st.header("Match Prediction")
+    st.markdown("""
+The **Match Prediction** tab uses machine learning models and historical data to predict the outcome of matches. 
+By selecting two teams, you can see predicted win probabilities, draw probabilities, and additional statistics 
+such as clean sheets and most common scorelines.
+
+This tab helps you make informed predictions based on data-driven insights, whether you're forecasting upcoming 
+fixtures or analyzing historical trends.
+""")
+
     league_prediction(combined_data)
     enhanced_match_prediction(combined_data)
 
