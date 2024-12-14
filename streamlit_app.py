@@ -147,6 +147,13 @@ def plot_team_overview(data, team):
     except Exception as e:
         logging.error(f"Error in plot_team_overview: {e}")
         st.error("Failed to generate team overview.")
+# Add enhanced visualizations for Team Performance
+st.subheader("Team Overview")
+plot_team_overview(combined_data, selected_team)
+
+st.subheader("Player Analytics")
+plot_player_analytics(combined_data, selected_team)
+
 def plot_player_analytics(data, team):
     try:
         st.subheader(f"Player Analytics for {team}")
@@ -401,8 +408,11 @@ if __name__ == "__main__":
     with tab2:
         st.header("Team Performance")
         selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
-        plot_team_overview(combined_data, selected_team)
-        plot_player_analytics(combined_data, selected_team)
+        st.subheader("Team Overview")
+    plot_team_overview(combined_data, selected_team)
+
+    st.subheader("Player Analytics")
+    plot_player_analytics(combined_data, selected_team)
 
     with tab3:
         st.header("Head-to-Head")
