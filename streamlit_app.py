@@ -23,6 +23,7 @@ def load_model():
     return joblib.load("ensemble_model.pkl")
 
 # Helper Function: Load Base64 Encoded Image
+# Helper Function: Load Base64 Encoded Image
 def get_base64(file_path):
     with open(file_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
@@ -34,7 +35,7 @@ def set_background(image_file):
         f"""
         <style>
         .stApp {{
-            background: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9)), 
+            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), 
             url(data:image/jpg;base64,{base64_image});
             background-size: cover;
             color: white;
@@ -325,6 +326,9 @@ def enhanced_match_prediction(data):
 # App Layout with Tabs
 
 if __name__ == "__main__":
+    # Set the background
+    set_background("pl_logo.jpg")  # Ensure pl_logo.jpg is in the same directory
+    
     # Load data
     combined_data, filtered_data = load_data()
     
