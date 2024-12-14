@@ -416,31 +416,36 @@ if __name__ == "__main__":
     st.write(combined_data.head())
 
     # Initialize the tabs
+# Initialize the tabs
 tab1, tab2, tab3, tab4 = st.tabs(["League Overview", "Team Performance", "Head-to-Head", "Match Prediction"])
 
-# Use tab2 inside the `with` block
+# League Overview Tab
+with tab1:
+    st.header("League Overview")
+    plot_goals_heatmap(combined_data)
+    plot_avg_goals_trend(combined_data)
+    plot_goal_distribution(combined_data)
 
+# Team Performance Tab
+with tab2:
+    st.header("Team Performance")
+    selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
+    plot_team_overview(combined_data, selected_team)
+    plot_player_analytics(combined_data, selected_team)
 
+# Head-to-Head Tab
+with tab3:
+    st.header("Head-to-Head")
+    team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
+    team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1], key="h2h_team2")
+    display_h2h_results(combined_data, team1, team2)
 
- with tab1:
-        st.header("League Overview")
-        plot_heatmap(combined_data)
-        plot_goals_trend(combined_data)
-        plot_goal_distribution(combined_data)
- with tab2:
-        st.header("Team Performance")
-        selected_team = st.selectbox("Select a Team", combined_data['HomeTeam'].unique(), key="team_performance")
-        plot_team_overview(combined_data, selected_team)
-        plot_player_analytics(combined_data, selected_team)
- with tab3:
-        st.header("Head-to-Head")
-        team1 = st.selectbox("Select Team 1", combined_data['HomeTeam'].unique(), key="h2h_team1")
-        team2 = st.selectbox("Select Team 2", [t for t in combined_data['AwayTeam'].unique() if t != team1], key="h2h_team2")
-        display_h2h_results(combined_data, team1, team2)
- with tab4:
-        st.header("Match Prediction")
-        league_prediction(combined_data)
-        enhanced_match_prediction(combined_data)
+# Match Prediction Tab
+with tab4:
+    st.header("Match Prediction")
+    league_prediction(combined_data)
+    enhanced_match_prediction(combined_data)
+
 
 
 
