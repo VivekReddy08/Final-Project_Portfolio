@@ -234,54 +234,46 @@ def match_winner_predictor(data):
             st.error("Error generating win probability pie chart.")
 
        
-# Display Goals Distribution Values
+# Display Goals Distribution Values Without Error-Prone Try Blocks
 def display_goals_distribution(data, team1, team2):
-    try:
-        h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
-                   ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
-        goals_home = h2h['FTHG'].tolist()
-        goals_away = h2h['FTAG'].tolist()
+    h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
+               ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
+    goals_home = h2h['FTHG'].tolist()
+    goals_away = h2h['FTAG'].tolist()
 
-        if len(goals_home) == 0 and len(goals_away) == 0:
-            st.warning(f"No match data available between {team1} and {team2}.")
-            return
+    if not goals_home and not goals_away:
+        st.warning(f"No match data available between {team1} and {team2}.")
+        return
 
-        # Combine data into a DataFrame
-        goals_data = pd.DataFrame({
-            f"{team1} Goals (Home)": goals_home,
-            f"{team2} Goals (Away)": goals_away
-        })
+    # Combine data into a DataFrame
+    goals_data = pd.DataFrame({
+        f"{team1} Goals (Home)": goals_home,
+        f"{team2} Goals (Away)": goals_away
+    })
 
-        st.subheader(f"Goals Distribution: {team1} vs {team2}")
-        st.dataframe(goals_data)
-    except Exception as e:
-        st.error(f"An error occurred while displaying the goals distribution: {e}")
-        logging.error(f"Error in display_goals_distribution: {e}")
+    st.subheader(f"Goals Distribution: {team1} vs {team2}")
+    st.dataframe(goals_data)
 
-# Display Head-to-Head Results in Table
+# Display Head-to-Head Results in Table Without Error-Prone Try Blocks
 def display_h2h_results(data, team1, team2):
-    try:
-        h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
-                   ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
-        team1_wins = len(h2h[h2h['FTR'] == 'H'])
-        team2_wins = len(h2h[h2h['FTR'] == 'A'])
-        draws = len(h2h[h2h['FTR'] == 'D'])
+    h2h = data[((data['HomeTeam'] == team1) & (data['AwayTeam'] == team2)) |
+               ((data['HomeTeam'] == team2) & (data['AwayTeam'] == team1))]
+    team1_wins = len(h2h[h2h['FTR'] == 'H'])
+    team2_wins = len(h2h[h2h['FTR'] == 'A'])
+    draws = len(h2h[h2h['FTR'] == 'D'])
 
-        if team1_wins == 0 and team2_wins == 0 and draws == 0:
-            st.warning(f"No head-to-head match data available between {team1} and {team2}.")
-            return
+    if team1_wins == 0 and team2_wins == 0 and draws == 0:
+        st.warning(f"No head-to-head match data available between {team1} and {team2}.")
+        return
 
-        # Prepare data for display
-        results_data = pd.DataFrame({
-            "Result": ["Team 1 Wins", "Team 2 Wins", "Draws"],
-            "Count": [team1_wins, team2_wins, draws]
-        })
+    # Prepare data for display
+    results_data = pd.DataFrame({
+        "Result": ["Team 1 Wins", "Team 2 Wins", "Draws"],
+        "Count": [team1_wins, team2_wins, draws]
+    })
 
-        st.subheader(f"Head-to-Head Results: {team1} vs {team2}")
-        st.dataframe(results_data)
-    except Exception as e:
-        st.error(f"An error occurred while displaying the head-to-head results: {e}")
-        logging.error(f"Error in display_h2h_results: {e}")
+    st.subheader(f"Head-to-Head Results: {team1} vs {team2}")
+    st.dataframe(results_data)
 
 # App Layout with Tabs
 def app():
