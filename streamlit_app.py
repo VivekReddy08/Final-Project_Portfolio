@@ -12,34 +12,6 @@ if not os.path.exists("pl_logo.jpg"):
 else:
     st.success("File 'pl_logo.jpg' found successfully.")
 
-def get_base64(file_path):
-    try:
-        with open(file_path, "rb") as f:
-            return base64.b64encode(f.read()).decode()
-    except Exception as e:
-        st.error(f"Error loading image: {e}")
-        return ""
-
-def set_background(image_file):
-    image_base64 = get_base64(image_file)
-    if image_base64:
-        st.markdown(
-            f"""
-            <style>
-            .stApp {{
-                background-image: url("data:image/png;base64,{image_base64}");
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                background-attachment: fixed;
-            }}
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-
-# Example Usage
-set_background("pl_logo.jpg")  # Replace with your image file path
 
 
 # Setup logging
@@ -56,6 +28,33 @@ def load_data():
 @st.cache_data
 def load_model():
     return joblib.load("ensemble_model.pkl")
+
+def get_base64(file_path):
+    try:
+        with open(file_path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    except Exception as e:
+        logging.error(f"Error loading image: {e}")
+        st.error("Failed to load background image.")
+        return ""
+
+def set_background_color():
+    try:
+        st.markdown(
+            f"""
+            <style>
+            .stApp {{
+                background-color: #2C2C2C; /* Greyish black */
+                color: white;
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+    except Exception as e:
+        logging.error(f"Error in set_background_color: {e}")
+        st.error("Failed to apply background color.")
+
 # Enhanced Visualizations
 def plot_goals_heatmap(data):
     try:
